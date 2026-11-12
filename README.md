@@ -10,6 +10,7 @@ Working MVP — v2 engine: official-domain whitelist first, hard rules for brand
 - Hindi voice alert (Web Speech API)
 - Family alert flow
 - v2 engine: whitelist-first verification — unknown domains are never called safe
+- v3 Advanced adds: QR photo scan, phone-number checker, per-link breakdown for messages, domain anatomy view, category scores, voice input, Hindi UI, Elder Mode, scan history, WhatsApp family alert.
 
 ## Tech stack
 - HTML / CSS / JavaScript
