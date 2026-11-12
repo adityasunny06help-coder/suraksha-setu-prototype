@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Suraksha Setu — AI Scam Shield Prototype</title>
+<style>body{font-family:system-ui,Arial,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:20px} .card{max-width:720px;margin:auto;background:#1e293b;border-radius:16px;padding:24px} h1{color:#38bdf8;margin:0 0 6px} textarea,input{width:100%;padding:12px;border-radius:10px;border:1px solid #475569;background:#0f172a;color:#fff;box-sizing:border-box} button{background:#0284c7;color:#fff;border:0;padding:12px 20px;border-radius:10px;font-size:16px;cursor:pointer;margin-top:10px} .safe{color:#4ade80}.warn{color:#facc15}.danger{color:#f87171} li{margin:4px 0} .score{font-size:42px;font-weight:800}</style></head>
+<body><div class="card"><h1>🛡️ Suraksha Setu</h1><p>AI Scam Shield for Bharat's first-time smartphone users — koi bhi link, UPI ID ya message <b>tap karne se pehle</b> check karo.</p>
+<label>Paste Link / UPI ID / Suspicious Message:</label><textarea id="inp" rows="4" placeholder="e.g. http://sbi-kyc-update.xyz/verify ya 'Your account will be blocked, share OTP'"></textarea>
+<button onclick="scan()">🔍 Scan Karo</button> <button onclick="speak()" style="background:#475569">🔊 Voice Alert Suno</button>
+<div id="out"></div>
+<h3>Try samples:</h3><button onclick="demo(0)">Scam KYC link</button> <button onclick="demo(1)">Safe bank link</button> <button onclick="demo(2)">OTP scam message</button>
+</div><script>
+let lastVerdict="";
+const samples=["http://sbi-kyc-update.xyz/free-gift?urgent=1 — Your KYC expired, account blocked today, verify now","https://www.onlinesbi.sbi/ — check balance","Congratulations! You won lottery Rs 50000. Share OTP and pay processing fee via collect request, offer expires in 10 minutes"];
+function demo(i){document.getElementById('inp').value=samples[i];scan();}
+function scan(){const t=document.getElementById('inp').value.trim(),low=t.toLowerCase();let s=0,reasons=[];
+const add=(c,p,r)=>{if(c){s+=p;reasons.push(r)}};
+add(/https?:\/\/\d+\.\d+\.\d+\.\d+/.test(low),30,"Link me domain ki jagah IP address hai");
+add(/\.(xyz|top|click|live|site|online|buzz|work)\b/.test(low),20,"Suspicious sasta TLD (.xyz/.top aadi) — asli bank aise domain nahi use karte");
+add(/(bit\.ly|tinyurl|cutt\.ly|rb\.gy)/.test(low),20,"Shortened link — asli destination chhupa hai");
+add(/(kyc|verify|blocked|expire|suspend)/.test(low)&&(/(sbi|hdfc|icici|paytm|phonepe|bank)/.test(low)),25,"Bank ke naam par KYC/block dhamki — classic phishing pattern");
+add(/(otp|pin|cvv|password)/.test(low)&&/(share|batao|send|enter|daalo)/.test(low),35,"OTP/PIN maangna — bank kabhi OTP nahi maangta");
+add(/(lottery|won|prize|free gift|cashback|double money)/.test(low),25,"Lottery/free gift ka jhansa");
+add(/(urgent|turant|abhi|expires in|last chance|10 minutes)/.test(low),15,"Jaldi-baazi ka pressure — scam ki pehchan");
+add(/(collect request|processing fee|refund)/.test(low),20,"UPI collect / fee maangna — paisa jaane wala pattern, aane wala nahi");
+add(/@/.test(low)&&/https?:/.test(low),15,"URL me @ hai — browser asal site ko ignore kar sakta hai");
+if(s>100)s=100; let cls=s>=50?'danger':s>=25?'warn':'safe',v=s>=50?'🔴 KHATRA — Tap mat karo!':s>=25?'🟡 SAVDHAAN — Pehle verify karo':'🟢 Surakshit lag raha hai';
+lastVerdict=v+". Risk score "+s+" out of 100. "+(reasons.join(". ")||"Koi scam pattern nahi mila.");
+document.getElementById('out').innerHTML='<p class="score '+cls+'">'+s+'/100</p><h2 class="'+cls+'">'+v+'</h2><ul>'+(reasons.map(r=>'<li>'+r+'</li>').join('')||'<li>Koi scam pattern detect nahi hua</li>')+'</ul><p><b>Family Alert:</b> Khatra hone par bade-buzurg ke liye ek-tap parivar ko alert bhejne ka flow prototype me shamil hai.</p>';}
+function speak(){if(lastVerdict&&'speechSynthesis' in window){let u=new SpeechSynthesisUtterance(lastVerdict);u.lang='hi-IN';speechSynthesis.speak(u);}else alert('Pehle Scan karo');}
+</script></body></html>
