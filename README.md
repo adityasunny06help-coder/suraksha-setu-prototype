@@ -1,5 +1,7 @@
 # Suraksha Setu — AI Scam Shield
 
+**Live Demo:** https://adityasunny06help-coder.github.io/suraksha-setu-prototype/
+
 Working MVP: a pre-tap scam-check tool. Paste any link, UPI ID or message before tapping it and get a 0-100 risk score, Hinglish reasons and a Hindi voice alert, plus a family alert flow.
 
 ## Features
