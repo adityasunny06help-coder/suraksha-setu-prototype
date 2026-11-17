@@ -1,0 +1,5 @@
+# Local dev + tests ke liye (backend/.venv me install hota hai).
+fastapi==0.163.2
+uvicorn==0.54.0
+httpx==0.28.1
+pytest==9.2.0
