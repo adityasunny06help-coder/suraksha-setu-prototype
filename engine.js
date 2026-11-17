@@ -1,0 +1,161 @@
+// Suraksha Setu v4 — detector engine (pure logic, no DOM). v3.1 ka saara logic + saare fixes barkarar.
+export const OFFICIAL = {
+ sbi:["sbi.bank.in","sbi.co.in","onlinesbi.sbi"], hdfc:["hdfc.bank.in","hdfcbank.com"], hdfcbank:["hdfc.bank.in","hdfcbank.com"],
+ icici:["icici.bank.in","icicibank.com"], axis:["axisbank.com","axis.bank.in"], kotak:["kotak.bank.in","kotak.com"],
+ paytm:["paytm.com","paytmbank.com"], phonepe:["phonepe.com"], amazon:["amazon.in","amazon.com"], flipkart:["flipkart.com"],
+ irctc:["irctc.co.in"], uidai:["uidai.gov.in"], aadhaar:["uidai.gov.in"], npci:["npci.org.in"], indiapost:["indiapost.gov.in"],
+ parivahan:["parivahan.gov.in"], google:["google.com"], lic:["licindia.in"], epfo:["epfindia.gov.in"], jio:["jio.com"], airtel:["airtel.in"], pnb:["pnbindia.in"], bankofbaroda:["bankofbaroda.in"], canara:["canarabank.com","canarabank.in"], unionbank:["unionbankofindia.co.in"], meesho:["meesho.com"], myntra:["myntra.com"], delhivery:["delhivery.com"], dtdc:["dtdc.in"], bluedart:["bluedart.com"]
+};
+export const ALL_OFFICIAL = Object.values(OFFICIAL).flat();
+export const BRANDS = Object.keys(OFFICIAL);
+export const SHORTENERS = ["bit.ly","tinyurl.com","cutt.ly","rb.gy","t.co","goo.gl","tiny.cc","is.gd","shorturl.at","rebrand.ly","s.id","ow.ly","buff.ly"];
+export const FREEHOST = ["vercel.app","netlify.app","firebaseapp.com","web.app","github.io","gitlab.io","000webhostapp.com","weebly.com","blogspot.com","wixsite.com","glitch.me","surge.sh","pages.dev","workers.dev","ngrok.io","ngrok-free.app","trycloudflare.com","serveo.net","appspot.com","azurewebsites.net","herokuapp.com","onrender.com","railway.app","fly.dev","hf.space","streamlit.app","blogspot.in"];
+export const TLD1 = ["top","zip","cfd","sbs","bond","cyou","icu","click","quest","surf","cam","buzz","rest","mov","tk","ml","ga","cf","gq"];
+export const TLD2 = ["xyz","online","site","shop","live","info","biz","club","store"];
+export const SENS = ["login","signin","sign-in","verify","kyc","otp","auth","secure","update","recovery","password","wallet","pay","payment","refund","bank","account","challan","bill","checkout"];
+export const HANDLES = ["okaxis","okhdfcbank","okhdfc","okicici","oksbi","ybl","ibl","axl","paytm","ptyes","ptaxis","pthdfc","apl","yapl","rapl","upi","sbi","hdfcbank","icici","axisbank","kotak","okbizaxis","rajgovhdfcbank"];
+export const SUFFIX2 = ["co.in","bank.in","gov.in","ac.in","org.in","net.in","com.in","firm.in","gen.in","ind.in","co.uk","com.au"];
+export function lev(a,b){const m=a.length,n=b.length,d=Array.from({length:m+1},(_,i)=>[i]);for(let j=1;j<=n;j++)d[0][j]=j;for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]==b[j-1]?0:1));return d[m][n];}
+export function registrable(host){const parts=host.split(".");if(parts.length<=2)return host;const last2=parts.slice(-2).join(".");if(SUFFIX2.includes(last2))return parts.slice(-3).join(".");return last2;}
+export function sldOf(host){const r=registrable(host).split(".");return r[0];}
+export function isOfficial(host){return ALL_OFFICIAL.some(d=>host===d||host.endsWith("."+d));}
+export function officialFor(brand,host){return (OFFICIAL[brand]||[]).some(d=>host===d||host.endsWith("."+d));}
+export function scoreURL(raw, inMessage){
+  let score=0; const reasons=[]; let hard=0;
+  const add=(p,r)=>{if(p>0){score+=p;reasons.push([p,r]);}};
+  let u; const txt=raw.trim();
+  if(/^(data|javascript|blob|file):/i.test(txt)){return{score:90,reasons:[[90,"Dangerous scheme (data:/javascript:) — asli website aisi nahi hoti"]],hard:1,official:false,host:""};}
+  try{u=new URL(/^https?:\/\//i.test(txt)?txt:"https://"+txt);}catch(e){return{score:20,reasons:[[20,"Link samajh nahi aaya — aise link par tap mat karo"]],hard:0,official:false,host:""};}
+  const host=u.hostname.toLowerCase().replace(/\.$/,""), path=(u.pathname+" "+u.search).toLowerCase(), full=(host+path).toLowerCase();
+  const official=isOfficial(host);
+  if(official){return{score:0,reasons:[[0,"Official domain match: "+host+" — whitelist me hai"]],hard:0,official:true,host,sensitive:SENS.some(w=>path.includes(w))};}
+  if(/\.(apk|exe|scr|msi)(\?|$)/i.test(u.pathname)){hard=1;reasons.push([85,"Seedha APK/EXE download — bank/payment app aise install nahi hota"]);}
+  const isIP=/^\d{1,3}(\.\d{1,3}){3}$/.test(host)||host.includes(":")||/^0x[0-9a-f]+$/i.test(host);
+  const brandInHost=BRANDS.filter(b=>host.includes(b));
+  const brandInUser=u.username&&BRANDS.some(b=>u.username.toLowerCase().includes(b));
+  const sensitive=SENS.filter(w=>path.includes(w));
+  // Hard rules
+  if(brandInUser){hard=1;reasons.push([85,"@ wala trick: asli site @ ke BAAD wala hissa hai, pehle brand ka naam sirf dhokha hai"]);}
+  if(isIP&&(brandInHost.length||brandInUser||sensitive.length)){hard=1;reasons.push([85,"Brand/login wala page seedha IP address par — asli bank IP par nahi chalta"]);}
+  for(const b of brandInHost){if(!officialFor(b,host)){hard=1;reasons.push([85,"Brand impersonation: '"+b+"' naam is domain me hai, lekin ye uska official domain NAHI hai (official: "+OFFICIAL[b].join(", ")+")"]);}}
+  const sld=sldOf(host);
+  if(!official){for(const b of BRANDS){if(sld!==b&&lev(sld,b)>=1&&lev(sld,b)<=2&&b.length>=4){hard=1;reasons.push([85,"Typosquat domain: '"+sld+"' asli brand '"+b+"' ki nakli spelling lagti hai"]);}}}
+  if(host.includes("xn--")||/[^\x00-\x7F]/.test(host)){if(brandInHost.length||sensitive.length||lev(sld.replace(/^xn--/,""),"sbi")<=3){hard=1;reasons.push([85,"Punycode/homograph domain + sensitive page — asli brand ki nakal ho sakti hai"]);}else add(25,"Punycode (xn--) domain — akshar dhokha de sakte hain");}
+  const freehost=FREEHOST.find(f=>host===f||host.endsWith("."+f));
+  if(freehost&&(brandInHost.length||path.includes("login")||path.includes("signin"))){hard=1;reasons.push([85,"Free-hosting ("+freehost+") par brand ka login page — asli company aise host nahi karti"]);}
+  // Additive
+  add(15,"Domain pehchana nahi gaya — kisi official list me nahi hai");
+  if(isIP)add(35,"Host domain nahi, seedha IP address hai");
+  if(u.username)add(30,"URL me @ hai — browser @ ke baad wali site kholta hai");
+  if(SHORTENERS.includes(host))add(20,"Shortened link — asli destination chhupa hai");
+  if(freehost)add(20,"Free-hosting/tunnel domain ("+freehost+")");
+  const tld=host.split(".").pop();
+  if(TLD1.includes(tld))add(18,"High-risk sasta TLD (."+tld+") — scam sites me bahut common");
+  else if(TLD2.includes(tld))add(8,"Kam-bharose wala TLD (."+tld+")");
+  if(u.protocol==="http:")add(sensitive.length?15:5, sensitive.length?"HTTP (bina lock) par login/payment wala page":"HTTP hai, HTTPS nahi");
+  if(u.port)add(15,"Non-standard port ("+u.port+")");
+  const len=txt.length; add(len>110?15:len>75?10:len>53?5:0,"Link bahut lamba hai ("+len+" characters)");
+  const reg=registrable(host); const subs=host===reg?0:host.slice(0,host.length-reg.length-1).split(".").length;
+  add(subs>=4?15:subs===3?10:subs===2?5:0,"Bahut zyada subdomains ("+subs+") — asli domain chhupaya gaya hai");
+  const hy=(sld.match(/-/g)||[]).length; add(hy>=2?10:hy===1?5:0,"Domain me zyada hyphens");
+  const dig=(sld.match(/\d/g)||[]).length; if(dig>=3||sld.length>20)add(10,"Domain me zyada digits / bahut lamba naam");
+  add(sensitive.length>=2?15:sensitive.length===1?8:0,"Path me sensitive words: "+sensitive.slice(0,3).join(", "));
+  if(inMessage)add(10,"Ye link ek message ke andar aaya hai — unsolicited link extra risky hota hai");
+  if(sensitive.length)score=Math.max(score,35);
+  if(sensitive.length&&u.protocol==="http:")score=Math.max(score,55);
+  if(hard)score=Math.max(score,85);
+  return{score:Math.min(score,100),reasons,hard,official:false,host,sensitive:sensitive.length>0};
+}
+export function scoreVPA(vpa){
+  const reasons=[]; let score=0,hard=0; const m=vpa.toLowerCase().match(/^([\w.\-]{2,})@([a-z0-9]{2,})$/);
+  if(!m)return{score:20,reasons:[[20,"UPI ID ka format sahi nahi lag raha"]],hard:0};
+  const local=m[1],handle=m[2];
+  const look=HANDLES.includes(handle)?null:HANDLES.find(h=>h!==handle&&lev(handle,h)>=1&&lev(handle,h)<=2&&h.length>=6);
+  const brandLocal=BRANDS.find(b=>local.includes(b))||(local.includes("refund")||local.includes("cashback")||local.includes("prize")||local.includes("reward"));
+  if(look){score=Math.max(score+40,55);reasons.push([40,"Handle '@"+handle+"' asli '@"+look+"' se ek akshar alag hai — nakli handle ho sakta hai"]);}
+  if(brandLocal){score+=20;reasons.push([20,"UPI naam me brand/lure word hai ('"+local+"') — koi bhi aisa naam bana sakta hai, ye proof nahi hai"]);}
+  if(brandLocal&&(!HANDLES.includes(handle)||look)){hard=1;reasons.push([85,"Brand wala naam + galat/nakli handle — UPI scam pattern"]);}
+  if(!HANDLES.includes(handle)&&!look){score=Math.max(score+15,35);reasons.push([15,"Handle '@"+handle+"' jaane-pehchane bank/app handles me nahi hai — payee verify nahi ho paya"]);}
+  if(HANDLES.includes(handle)&&!score){score=20;reasons.push([[20],"Handle asli list me hai, LEKIN isse payee asli sabit nahi hota — app me dikhne wala NAAM apne jaankari se match karo"][1]||"Handle asli list me hai, LEKIN isse payee asli sabit nahi hota — app me dikhne wala naam match karo");}
+  if(hard)score=Math.max(score,85);
+  return{score:Math.min(score,100),reasons,hard};
+}
+export function scoreMessage(text){
+  const t=text.toLowerCase(); const reasons=[]; let score=0,hard=0;
+  const has=(...ws)=>ws.some(w=>t.includes(w));
+  const clusters=[];
+  // Hard patterns H6
+  if(has("digital arrest","डिजिटल अरेस्ट","digital custody")){hard=1;clusters.push([85,"DIGITAL ARREST scam — CBI/Police/Customs kabhi video call par arrest nahi karte (I4C advisory)"]);}
+  const authSig=[has("cbi","ed officer","customs officer","police officer","rbi officer","enforcement directorate"),has("video call","whatsapp video","skype call"),has("parcel","drugs","money laundering","seized"),has("tell no one","kisi ko mat bata","secret","गुप्त"),has("verification account","transfer karo","transfer now")].filter(Boolean).length;
+  if(!hard&&authSig>=3){hard=1;clusters.push([85,"Digital-arrest pattern: officer ka daava + video call + parcel/drugs ya secrecy + paisa transfer"]);}
+  if(/pin[^.]{0,50}(to receive|receive karne|paise paane|refund paane)|(receive|refund)[^.]{0,50}(enter|daalo|share|type)[^.]{0,25}(pin|otp)/.test(t)||has("collect request approve karke pin","approve the collect request and enter")){hard=1;clusters.push([85,"PIN daal kar paisa RECEIVE nahi hota — UPI PIN sirf paisa DENE ke liye hota hai (NPCI niyam). Ye pakka scam hai"]);}
+  if(has("prepaid task","pre-paid task")||/(deposit|jama)[^.]{0,40}(earn|profit|wapas.*double|get ₹|get rs)/.test(t)){hard=1;clusters.push([85,"Task scam: pehle paise jama karwa kar 'profit' ka jhansa — paisa gaya to wapas nahi aata"]);}
+  if((has("fee","charge","deposit")&&has("withdraw","unfreeze","release your"))){hard=1;clusters.push([85,"Paisa nikaalne ke liye pehle fee — investment scam ki pakki pehchan"]);}
+  if(has("intimate video","private video viral","video viral kar dunga","sextortion")){hard=1;clusters.push([85,"Sextortion/blackmail pattern — paisa mat do, 1930 par report karo"]);}
+  // Clusters (take max cluster, then cross-cutting)
+  let cluster=0,clusterName="";
+  const setC=(p,r)=>{if(p>cluster){cluster=p;clusterName=r;}};
+  if(has("kyc")&&has("expire","expired","block","update","pending","suspend","बंद","ब्लॉक"))setC(35,"KYC scam pattern — bank KYC kabhi SMS/WhatsApp link se nahi karte (RBI)");
+  if(has("parcel","courier","package")&&has("drugs","seized","customs fee","customs duty","clearance fee"))setC(30,"Courier/customs scam pattern — parcel ke naam par fee vasuli");
+  if(has("electricity","bijli","बिजली")&&has("disconnect","cut","kaat","डिस्कनेक्ट"))setC(30,"Bijli disconnect scam — board kabhi aise message se turant paisa nahi maangta");
+  if(has("challan")&&has("pay","link","http"))setC(30,"Challan scam pattern — asli challan sirf parivahan.gov.in par bharo");
+  if(has("customer care","customercare","helpline number")&&has("call","number","संपर्क"))setC(25,"Fake customer-care pattern — number hamesha official app/site se lo");
+  if(has("loan")&&has("processing fee","approval fee","pay first","upfront"))setC(35,"Loan scam — asli loan pehle fee nahi maangta");
+  if(has("guaranteed return","guaranteed profit","double money","paisa double","100% profit","daily profit"))setC(30,"Guaranteed/double profit — aisi guarantee sirf scam deta hai");
+  if(has("like karo","like videos","youtube video like","telegram group","telegram channel")&&has("earn","daily","₹","rs "))setC(25,"Task/job scam pattern — like karke hazaron kamai ka jhansa");
+  if(cluster)clusters.push([cluster,clusterName]);
+  score=cluster;
+  // Cross-cutting
+  const cross=(c,p,r)=>{if(c){score+=p;reasons.push([p,r]);}};
+  cross(/(share|batao|send|enter|daalo|type)[^.]{0,25}(otp|pin|cvv|password)/.test(t)||has("otp batao","share otp","otp share"),25,"OTP/PIN/CVV maangna — bank ya koi officer kabhi nahi maangta");
+  cross(has("install","download karo","apk")&&has("app","apk","anydesk","teamviewer","quicksupport","screen share"),20,"App/APK install ya screen-share karwana — phone ka control dena hai");
+  cross(has("tonight","today","abhi","turant","within 2 hour","within few hour","last chance","blocked today","expire ho jayega","तुरंत","आज ही"),10,"Turant/band hone ka pressure — sochne ka time na dena scam ki chaal hai");
+  cross(has("tell no one","kisi ko mat batao","secret rakho","गुप्त रखो"),10,"Chhupane ko kehna — asli authority kabhi nahi kehti");
+  cross(has("lottery","won","prize","cashback milega","free gift","inaam","इनाम"),10,"Lottery/prize/cashback ka lalach");
+  cross(has("electricity officer","officer ka number","call karo")&&/\d{10}/.test(t),10,"Officer ka personal mobile number — official kaam personal number se nahi hota");
+  const all=[...clusters,...reasons];
+  if(hard)score=Math.max(score,85);
+  return{score:Math.min(score,100),reasons:all,hard};
+}
+export function scan(raw){
+  const text=(raw||"").trim(); if(!text)return null;
+  const urlMatch=text.match(/((https?:\/\/|www\.)[^\s]+|[\w\-]+(\.[\w\-]+)+\.[a-z]{2,}(:\d+)?(\/[^\s]*)?)/gi);
+  const vpaMatch=text.match(/[\w.\-]{2,}@[a-zA-Z]{2,}[\w]*(?![\w]|\.[a-zA-Z])/g);
+  const isSingle=text.split(/\s+/).length<=3&&!/[.!?]\s/.test(text);
+  let results=[];
+  if(/^\+?[\d\s\-()]{7,16}$/.test(text)&&text.replace(/\D/g,"").length>=7&&text.replace(/\D/g,"").length<=13){return scorePhone(text);}
+  if(isSingle&&vpaMatch&&vpaMatch[0]===text.trim()){const v=scoreVPA(text.trim());return{score:v.score,reasons:v.reasons,hard:v.hard,kind:"UPI ID"};}
+  if(isSingle&&urlMatch){const u=scoreURL(text,false);return{score:u.score,reasons:u.reasons,hard:u.hard,kind:"Link",official:u.official};}
+  // Message mode
+  const msg=scoreMessage(text); let best={score:msg.score,reasons:msg.reasons,hard:msg.hard,kind:"Message"};
+  let extra=[];
+  if(urlMatch){for(const um of urlMatch){const u=scoreURL(um,true);const combined=msg.score+u.score-(u.official?u.score:0);const sc=u.hard?Math.max(85,combined):Math.max(u.score,Math.min(combined,100));if(sc>=best.score){best={score:sc,reasons:[...msg.reasons,...u.reasons],hard:u.hard||msg.hard,kind:"Message + Link"};}}}
+  if(vpaMatch){for(const vm of vpaMatch){if(vm.includes("."))continue;const v=scoreVPA(vm);if(v.hard){best={score:Math.max(85,best.score),reasons:[...best.reasons,...v.reasons],hard:1,kind:best.kind};}else if(v.score>0&&best.score<35){best.reasons=[...best.reasons,...v.reasons];}}}
+  // delivery context (A3)
+  if(urlMatch&&(text.toLowerCase().includes("parcel")||text.toLowerCase().includes("delivery")||text.toLowerCase().includes("track"))&&best.score>0&&best.score<55&&!msg.hard){best.reasons.push([5,"Delivery/tracking wala message — courier ka official app hi use karo"]);}
+  best.score=Math.min(Math.max(best.score,msg.hard?85:0),100);
+  return best;
+}
+
+export function scorePhone(raw){
+  let d=(raw||"").replace(/\D/g,"");
+  if(d.length===12&&d.startsWith("91"))d=d.slice(2); if(d.length===11&&d.startsWith("0"))d=d.slice(1);
+  if(/^(1800|000800)/.test(d))return{score:10,reasons:[[10,"Toll-free number (1800) — companies ke liye hota hai, phir bhi OTP/PIN kabhi mat do"]],hard:0,kind:"Phone Number"};
+  if(d.startsWith("140"))return{score:45,reasons:[[45,"140 series = telemarketing/promo number hai — bank ya sarkar is series se faisla wali call nahi karte"]],hard:0,kind:"Phone Number"};
+  if(d.startsWith("160"))return{score:20,reasons:[[20,"160 series = service/transactional calls ke liye reserved hai — phir bhi caller ki baat official app se verify karo"]],hard:0,kind:"Phone Number"};
+  if(/^[6-9]\d{9}$/.test(d))return{score:30,reasons:[[30,"Personal mobile number hai — koi bhi khud ko bank adhikari / police / customer-care bata sakta hai. Number asli hona pehchan ka proof NAHI hai"],[0,"Aisi call par OTP, PIN ya app-install bilkul nahi — service ke official app/number se khud call karke verify karo"]],hard:0,kind:"Phone Number"};
+  if(d.length>=7)return{score:25,reasons:[[25,"Ye number kisi jaani-pehchani category me nahi aaya — caller ko official channel se verify karo"]],hard:0,kind:"Phone Number"};
+  return{score:20,reasons:[[20,"Number samajh nahi aaya"]],hard:0,kind:"Phone Number"};
+}
+export function analyzeAll(text){
+  const items=[]; const seen=new Set();
+  const urlMatch=text.match(/((https?:\/\/|www\.)[^\s]+|[\w\-]+(\.[\w\-]+)+\.[a-z]{2,}(:\d+)?(\/[^\s]*)?)/gi)||[];
+  for(const um of urlMatch){if(seen.has(um))continue;seen.add(um);const u=scoreURL(um,urlMatch.length>0&&text.trim()!==um);items.push({label:um,score:u.score,host:u.host,official:u.official});}
+  const vpaMatch=text.match(/[\w.\-]{2,}@[a-zA-Z]{2,}[\w]*(?![\w]|\.[a-zA-Z])/g)||[];
+  for(const vm of vpaMatch){if(vm.includes("."))continue;if(seen.has(vm))continue;seen.add(vm);const v=scoreVPA(vm);items.push({label:vm,score:v.score});}
+  return items;
+}
+
+export function band(s){return s>=85?["🔴 DANGER — Ruk jao, tap mat karo","dan","Ye scam hone ke pakke sanket mile. Paisa/OTP bilkul mat do. 1930 par call karo ya cybercrime.gov.in par report karo."]:s>=55?["🟠 HIGH RISK — Lagbhag pakka scam hai","high","Aage mat badho. Service ko uske official app se khud kholo."]:s>=25?["🟡 CAUTION — Verify nahi ho paya","cau","Hum ise verify nahi kar paye. Password, OTP ya payment tab tak mat karo jab tak official app/website se khud na pahuncho."]:["🟢 LOW RISK — Koi strong scam signal nahi mila","low","Iska matlab guarantee NAHI hai. Address khud ek baar padh kar hi aage badho — OTP/PIN kabhi share nahi hota."];}
+export const SAMPLES = ["https://sbi-kyc-verify.top/login","https://www.sbi.bank.in","https://meesho-offer-free.vercel.app/login","I am CBI officer. A parcel with drugs in your name is seized. You are under digital arrest. Stay on WhatsApp video call, tell no one, transfer money to RBI verification account.","9876543210","https://www.pnbindia.in"];
+
