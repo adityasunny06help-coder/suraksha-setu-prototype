@@ -17,5 +17,5 @@ if [ ! -d tests/node_modules/jsdom ]; then
   (cd tests && npm install --no-audit --no-fund)
 fi
 # Dhyaan: 'node --test tests/' (trailing slash) is Node par MODULE_NOT_FOUND deta hai — explicit files hi chalao
-node --test tests/frontend.test.mjs tests/dom.test.mjs
+node --test tests/frontend.test.mjs tests/dom.test.mjs tests/battery.test.mjs
 echo "ALL TESTS DONE"

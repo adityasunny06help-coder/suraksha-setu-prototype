@@ -1,6 +1,7 @@
 # 🛡️ Suraksha Setu — AI Scam Shield (v4, Advanced Polyglot)
 
-**Live demo (frontend):** https://adityasunny06help-coder.github.io/suraksha-setu-prototype/
+**Live demo (poora app — frontend + backend):** https://suraksha-setu-prototype.vercel.app/
+**Backup demo (sirf frontend, standalone mode):** https://adityasunny06help-coder.github.io/suraksha-setu-prototype/
 **Repo:** https://github.com/adityasunny06help-coder/suraksha-setu-prototype
 
 Link, UPI ID, phone number, message ya QR photo — **tap karne se pehle** scam check karo.
@@ -111,18 +112,22 @@ API base ka order: `window.SS_API_BASE` → `?api=` URL param → same-origin `/
 ./test.sh
 ```
 
-- **Backend (pytest, 24 tests):** cross-language parity (Python me bhi 6/6 scores),
-  RDAP parse/fallback/404, RSS parse + per-feed isolation, API validation,
+- **Backend (pytest, 26 tests):** cross-language parity (Python me bhi 6/6 scores),
+  **84-case deep-review battery** (typosquat/@-trick/IP/shortener/UPI/phone/message patterns + benign FP guards),
+  RDAP parse/fallback/404 + exception-degrade, RSS parse + per-feed isolation, API validation,
   privacy (user text DB me nahi), Vercel entrypoint import smoke
-- **Frontend (node --test, 10 tests):** regression gate 6/6, i18n key parity,
-  esc/XSS discipline, jsdom DOM tests (history stored-XSS fix, pura language switch)
+- **Frontend (node --test, 12 tests):** regression gate 6/6, wahi 84-case battery JS engine par,
+  i18n key parity, esc/XSS discipline (incl. attribute-breakout payloads), jsdom DOM tests (history stored-XSS fix, pura language switch)
 
 ## Deploy
 
 - **GitHub Pages:** repo root ka static frontend serve hota hai — backend wala hissa
   Pages par nahi chalta (wahan demo hamesha standalone mode me rehta hai).
-- **Vercel (poora app, frontend + backend ek domain par):**
-  1. GitHub par ye repo push karo
+- **Vercel (poora app, frontend + backend ek domain par): LIVE hai** —
+  https://suraksha-setu-prototype.vercel.app (18 Nov 2026 ko deploy + live verify:
+  /api/health ok, /api/check par scam link 85 + official 0 with RDAP age, /api/alerts live items).
+  Dobara deploy karna ho to:
+  1. GitHub par ye repo push karo (Vercel GitHub se juda hai — naye commit par khud redeploy hota hai)
   2. Vercel me repo **Import** karo (koi framework preset nahi — "Other")
   3. Deploy — `api/index.py` serverless function ban jayega, root `requirements.txt`
      (fastapi + httpx) install hoga, `vercel.json` `/api/*` ko function par bhejega
@@ -144,4 +149,5 @@ API base ka order: `window.SS_API_BASE` → `?api=` URL param → same-origin `/
 - **v2** — whitelist-first engine · **v3** — QR, phone checker, Hindi/Elder mode, WhatsApp alert
 - **v3.1** — honest descriptor, sourced stat, 7 audit fixes (incl. stored-XSS)
 - **v4** — advanced polyglot rebuild: modular JS frontend + Python FastAPI backend + SQLite + live RDAP/RSS (ye version)
+- **v4.1** — final deep-review (FINAL-AUDIT.md): 84-case battery par 11 detector fixes (dangerous-scheme routing, brand coverage PayPal/WhatsApp/Microsoft/Netflix/Instagram/Telegram, lure-UPI floor, task-scam/collect-request naye patterns, "aapke"→apk aur "kabhi"→abhi substring FP fixes), RDAP exception par 500-degrade fix, i18n/a11y gaps (table headers, WhatsApp text, focus outline, aria-label)
 - Aage ka roadmap (Flutter/FastAPI/TFLite wala purana plan) **future plan hai, bana hua nahi** — jab banega tabhi yahan likhega.
