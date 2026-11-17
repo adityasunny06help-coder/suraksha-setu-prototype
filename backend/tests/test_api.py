@@ -45,6 +45,18 @@ def test_check_rdap_unavailable_degrades(monkeypatch):
     assert r.status_code == 200 and j["score"] == 30 and j["domain_age"] is None
 
 
+def test_check_rdap_exception_never_500(monkeypatch):
+    # Deep-review Round 2: RDAP enrichment khud exception phenke to bhi
+    # main jawab 500 nahi hona chahiye — signal gayab, score engine ka.
+    def boom(d):
+        raise RuntimeError("rdap exploded")
+    monkeypatch.setattr(main.rdap, "domain_age", boom)
+    r = client.post("/api/check", json={"input": "https://www.sbi.bank.in"})
+    assert r.status_code == 200
+    j = r.json()
+    assert j["score"] == 0 and j["domain_age"] is None
+
+
 def test_check_validation():
     assert client.post("/api/check", json={"input": ""}).status_code == 422
     assert client.post("/api/check", json={"input": "x" * 4001}).status_code == 422
