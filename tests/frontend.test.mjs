@@ -48,3 +48,18 @@ test('XSS discipline: result HTML me user ka payload raw nahi ghusta', () => {
   assert.ok(!html.includes('<svg onload'), 'raw <svg payload leak hua');
   assert.ok(html.includes('&lt;svg'), 'escaped roop maujood hona chahiye');
 });
+
+test('XSS discipline: attribute-breakout payloads bhi inert (deep-review Round 2)', () => {
+  const payloads = [
+    'check karo https://a.example/\'onmouseover=\'alert(1) https://sbi-kyc-verify.top',
+    'https://a.example/x https://b.example/y"><svg onload=alert(1)>',
+    'https://sbi-kyc-verify.top/<script>alert(1)</script>'
+  ];
+  for (const p of payloads) {
+    const html = buildResultHTML(scan(p), p);
+    assert.ok(!html.includes('<svg onload'), 'svg payload leak: ' + p.slice(0, 40));
+    assert.ok(!html.includes('<script>alert'), 'script payload leak: ' + p.slice(0, 40));
+    assert.ok(!html.includes('src=x onerror'), 'img payload leak: ' + p.slice(0, 40));
+    assert.ok(!html.includes("'onmouseover='"), 'attribute breakout leak: ' + p.slice(0, 40));
+  }
+});

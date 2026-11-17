@@ -1,0 +1,102 @@
+// Deep-review battery (FINAL-AUDIT Round 1): 84 cases — Python twin:
+// backend/tests/test_battery.py. Har case par score expected band ke andar.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { scan } from '../js/engine.js';
+
+const CASES = [
+  ["S1", "https://sbi-kyc-verify.top/login", 85, 100],
+  ["S2", "https://www.sbi.bank.in", 0, 0],
+  ["S3", "https://meesho-offer-free.vercel.app/login", 85, 100],
+  ["S4", "I am CBI officer. A parcel with drugs in your name is seized. You are under digital arrest. Stay on WhatsApp video call, tell no one, transfer money to RBI verification account.", 85, 100],
+  ["S5", "9876543210", 30, 30],
+  ["S6", "https://www.pnbindia.in", 0, 0],
+  ["U1", "https://paytm-secure-login.com/verify", 85, 100],
+  ["U2", "https://hdfc-bank-kyc.xyz/update", 85, 100],
+  ["U3", "https://sbi.bank.in.evil.com/login", 85, 100],
+  ["U4", "https://login.sbi.bank.in.attacker.top/verify", 85, 100],
+  ["U5", "https://secure-paytm@evil-login.top/", 85, 100],
+  ["U6", "http://192.168.1.50/sbi/login", 85, 100],
+  ["U7", "http://203.0.113.45/paytm/kyc", 85, 100],
+  ["U8", "https://bit.ly/3xYzAb", 25, 54],
+  ["U9", "https://tinyurl.com/sbi-kyc-update", 35, 100],
+  ["U10", "https://xn--sbi-9p4b.com/login", 55, 100],
+  ["U11", "https://onlinesbi.sbi", 0, 0],
+  ["U12", "https://customer.hdfcbank.com/login", 0, 0],
+  ["U13", "https://irctc.co.in", 0, 0],
+  ["U14", "https://sbi.co.in.evil.xyz", 85, 100],
+  ["U15", "https://g00gle.com/login", 85, 100],
+  ["U16", "https://amaz0n.in/login", 85, 100],
+  ["U17", "https://flipkart-offer.shop/win", 85, 100],
+  ["U18", "https://192.168.0.1:8080/login", 85, 100],
+  ["U19", "http://203.0.113.9/file.pdf", 35, 100],
+  ["U20", "https://en.wikipedia.org/wiki/Scam", 0, 24],
+  ["U21", "https://www.amazon.in", 0, 0],
+  ["U22", "https://amazon-offer-deals.top", 85, 100],
+  ["U23", "data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==", 55, 100],
+  ["U24", "https://sb\u0456.bank.in", 25, 100],
+  ["U25", "https://www.google.com", 0, 0],
+  ["U26", "https://paypa1.com/login", 85, 100],
+  ["U27", "https://whatsapp-verification.xyz/verify", 85, 100],
+  ["U28", "http://sbi.bank.in@phish.io/kyc", 85, 100],
+  ["U29", "https://hdfcbank.com@evil.top/login", 85, 100],
+  ["U30", "https://phonepe-payment-refund.site/claim", 85, 100],
+  ["U31", "https://www.icicibank.com", 0, 0],
+  ["U32", "https://kotak-mahindra-update.top/kyc", 85, 100],
+  ["P1", "rahul.sharma@okhdfcbank", 0, 24],
+  ["P2", "sbirefund@okhdfcbnak", 85, 100],
+  ["P3", "cashback.prize@ybl", 55, 84],
+  ["P4", "customer.care@fakebank", 25, 54],
+  ["P5", "9876543210@okaxis", 0, 24],
+  ["P6", "refund@okaxis", 55, 84],
+  ["P7", "sbi@okaxis", 0, 34],
+  ["P8", "prize.winner@okhdfcbnak", 85, 100],
+  ["T1", "+91 98765 43210", 25, 45],
+  ["T2", "09876543210", 25, 45],
+  ["T3", "1800 266 3201", 0, 24],
+  ["T4", "1401234567", 25, 54],
+  ["T5", "1601234567", 0, 24],
+  ["T6", "+91 140 987 6543", 25, 54],
+  ["M1", "Aap par digital arrest ka warrant hai. WhatsApp video call par bane rahein, kisi ko mat batao aur paise RBI verification account me transfer karo.", 85, 100],
+  ["M2", "\u0906\u092a\u0915\u094b \u0921\u093f\u091c\u093f\u091f\u0932 \u0905\u0930\u0947\u0938\u094d\u091f \u0915\u093f\u092f\u093e \u0917\u092f\u093e \u0939\u0948\u0964 \u0935\u0940\u0921\u093f\u092f\u094b \u0915\u0949\u0932 \u092a\u0930 \u092c\u0928\u0947 \u0930\u0939\u0947\u0902 \u0914\u0930 \u0915\u093f\u0938\u0940 \u0915\u094b \u092e\u0924 \u092c\u0924\u093e\u0913\u0964", 85, 100],
+  ["M3", "Dear customer, your bank account KYC is pending and will be blocked today. Update now: https://sbi-kyc-verify.top/login", 85, 100],
+  ["M4", "Your parcel is held at customs. Pay clearance charges Rs 450 to release your package: https://track-parcel-fast.xyz/pay", 55, 100],
+  ["M5", "Bijli bill bakaaya hai, aaj raat connection disconnect ho jayega. Turant is number par call karo 9876543210", 55, 100],
+  ["M6", "Bank se bol raha hu, aapke phone par aaya OTP batao, account band ho jayega", 25, 54],
+  ["M7", "Ghar baithe roz 2000 kamao. Bas YouTube videos like karo, Telegram group join karo. Pehle 500 deposit karke task shuru karo.", 85, 100],
+  ["M8", "Instant loan approved! Sirf processing fee 999 pehle pay karo, loan kal mil jayega", 25, 54],
+  ["M9", "Your vehicle challan of Rs 500 is pending. Pay here https://echallan-pay.xyz", 55, 100],
+  ["M10", "Tumhari private video viral kar dunga, 20000 bhejo warna sabko bhej dunga", 85, 100],
+  ["M11", "Apna profit withdraw karne ke liye pehle 10 percent fee jama karo", 85, 100],
+  ["M12", "Kal sham ko ghar aana, khana saath khayenge", 0, 24],
+  ["M13", "Your SBI account XX1234 credited with Rs 5000 on 12-Nov. Avl bal Rs 25000. -SBI", 0, 24],
+  ["M14", "Bank kabhi OTP nahi maangta. Apna OTP kisi ke saath share mat karo.", 0, 24],
+  ["M15", "Your WhatsApp will be deactivated today. Verify your number by sharing the 6-digit code sent to you.", 25, 54],
+  ["M16", "Your parcel has been delivered. Track on Delhivery app.", 0, 24],
+  ["M17", "Sir aapka KYC expire ho gaya hai, account band ho jayega, turant update karo warna paisa atak jayega", 35, 100],
+  ["M18", "Aapko 5000 mile hain! Collect request approve karke apna UPI PIN daalo aur paisa receive karo.", 85, 100],
+  ["M19", "CBI officer bol raha hu, aapke naam par parcel me drugs mile hain, video call par aao abhi", 85, 100],
+  ["M20", "Dear Customer, Your HDFC Bank KYC has expired. Your account will be suspended. Update immediately at https://hdfc-kyc-update.top", 85, 100],
+  ["N1", "https://www.paypal.com", 0, 0],
+  ["N2", "https://web.whatsapp.com", 0, 0],
+  ["N3", "https://login.microsoftonline.com", 0, 0],
+  ["N4", "https://www.netflix.com", 0, 0],
+  ["N5", "https://t.me/somechannel", 0, 0],
+  ["N6", "https://www.instagram.com", 0, 0],
+  ["N7", "https://pineapplejuice.shop", 0, 54],
+  ["N8", "https://microsoft-account-verify.top/login", 85, 100],
+  ["N9", "https://netfIix.com/login", 0, 100],
+  ["N10", "Sir aapke account me paise aaye hain, bank se baat karo", 0, 24],
+  ["N11", "Ye app install karo aur anydesk par code batao", 25, 100],
+  ["N12", "Maine naya phone liya, kabhi milte hain chai par", 0, 24]
+];
+
+test('deep-review battery: 84 cases expected bands ke andar', () => {
+  const bad = [];
+  for (const [id, input, lo, hi] of CASES) {
+    const r = scan(input);
+    const s = r ? r.score : null;
+    if (s === null || s < lo || s > hi) bad.push([id, s, lo, hi, String(input).slice(0, 50)]);
+  }
+  assert.deepEqual(bad, []);
+});
