@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Suraksha Setu v3 Advanced — AI Scam Shield</title>
+<title>Suraksha Setu v3.1 — AI Scam Shield</title>
 <style>body{font-family:system-ui,Arial,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:16px}body.elder{font-size:125%}body.elder button{font-size:19px;padding:14px 20px}.card{max-width:780px;margin:auto;background:#1e293b;border-radius:16px;padding:22px}h1{color:#38bdf8;margin:0 0 4px}.badge{background:#7c3aed;border-radius:8px;padding:2px 8px;font-size:12px;color:#fff}textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #475569;background:#0f172a;color:#fff;box-sizing:border-box}button{background:#0284c7;color:#fff;border:0;padding:11px 15px;border-radius:10px;font-size:15px;cursor:pointer;margin:6px 4px 0 0}.ghost{background:#475569}.purple{background:#7c3aed}.score{font-size:44px;font-weight:800}.low{color:#4ade80}.cau{color:#facc15}.high{color:#fb923c}.dan{color:#f87171}.meter{height:12px;background:#334155;border-radius:6px;overflow:hidden}.fill{height:100%}li{margin:4px 0}small{color:#94a3b8}.chip{display:inline-block;background:#334155;border-radius:14px;padding:4px 10px;margin:3px;font-size:13px}.chip b{color:#fff}.mini{height:8px;background:#334155;border-radius:4px;overflow:hidden;flex:1}.row{display:flex;align-items:center;gap:8px;margin:4px 0}.row span{width:130px;font-size:13px}table{width:100%;border-collapse:collapse;font-size:14px}td,th{border-bottom:1px solid #334155;padding:6px;text-align:left;word-break:break-all}.hist{cursor:pointer}</style></head>
-<body><div class="card"><h1>🛡️ Suraksha Setu <span class="badge">v3 ADVANCED</span></h1>
+<body><div class="card"><h1>🛡️ Suraksha Setu <span class="badge">v3.1</span></h1>
 <p id="tagline">Link, UPI ID, phone number, message ya QR — <b>tap karne se pehle</b> check karo. Pehle official-domain whitelist se verify hota hai; pehchana nahi gaya to "safe" kabhi nahi bolta.</p>
-<div><button class="ghost" onclick="setLang('hing')">Hinglish</button><button class="ghost" onclick="setLang('hindi')">हिंदी</button><button class="ghost" onclick="document.body.classList.toggle('elder')">👴 Bade Akshar (Elder Mode)</button></div>
+<p style="background:#0f172a;border:1px solid #475569;border-radius:10px;padding:8px 12px"><small id="honestLine">Sach ye hai: ye koi cloud AI nahi hai — ye ek on-device heuristic risk engine hai. Saari jaanch tumhare phone/browser me hi hoti hai; tumhara data device se bahar kahi nahi jata.</small></p>
+<div><button class="ghost" onclick="setLang('hing')">Hinglish</button><button class="ghost" onclick="setLang('hindi')">हिंदी</button><button class="ghost" id="elderBtn" onclick="document.body.classList.toggle('elder')">👴 Bade Akshar (Elder Mode)</button></div>
 <textarea id="inp" rows="4" placeholder="Link / UPI ID / phone number / message paste karo"></textarea>
-<div><button onclick="run()">🔍 Scan Karo</button><button class="ghost" onclick="speak()">🔊 Voice Alert</button><button class="ghost" onclick="voiceIn()">🎤 Bolkar Batao</button>
-<label class="purple" style="display:inline-block;padding:11px 15px;border-radius:10px;cursor:pointer;margin-top:6px">📷 QR Photo Scan<input type="file" accept="image/*" style="display:none" onchange="qrScan(this)"></label></div>
+<div><button id="scanBtn" onclick="run()">🔍 Scan Karo</button><button class="ghost" id="voiceBtn" onclick="speak()">🔊 Voice Alert</button><button class="ghost" id="voiceInBtn" onclick="voiceIn()">🎤 Bolkar Batao</button>
+<label class="purple" style="display:inline-block;padding:11px 15px;border-radius:10px;cursor:pointer;margin-top:6px"><span id="qrLbl">📷 QR Photo Scan</span><input type="file" accept="image/*" style="display:none" onchange="qrScan(this)"></label></div>
 <div id="out" style="margin-top:14px"></div>
 <div id="histBox"></div>
-<h3>Samples:</h3>
-<button class="ghost" onclick="demo(0)">Scam KYC link</button><button class="ghost" onclick="demo(1)">Asli SBI</button><button class="ghost" onclick="demo(2)">Meesho nakli offer</button><button class="ghost" onclick="demo(3)">Digital Arrest msg</button><button class="ghost" onclick="demo(4)">Personal number se officer</button><button class="ghost" onclick="demo(5)">Asli PNB</button>
-<p><small>Note: Ye tool guarantee nahi deta. OTP/PIN kabhi share mat karo. Scam lage to 1930 par call karo ya cybercrime.gov.in par report karo. QR scan Chrome/Android par chalta hai.</small></p>
+<h3 id="samplesH">Samples:</h3>
+<button class="ghost" id="demo0" onclick="demo(0)">Scam KYC link</button><button class="ghost" id="demo1" onclick="demo(1)">Asli SBI</button><button class="ghost" id="demo2" onclick="demo(2)">Meesho nakli offer</button><button class="ghost" id="demo3" onclick="demo(3)">Digital Arrest msg</button><button class="ghost" id="demo4" onclick="demo(4)">Personal number se officer</button><button class="ghost" id="demo5" onclick="demo(5)">Asli PNB</button>
+<p style="background:#0f172a;border:1px solid #475569;border-radius:10px;padding:8px 12px"><small id="statLine">📊 Kyun zaroori hai: I4C/NCRP ke hisaab se 2025 me 24,02,579 cyber-fraud complaints aayi aur citizens ne ₹22,495 crore ka nuksan report kiya (Source: PIB). Ye citizens dwara report kiya gaya amount hai — koi bank-loss ka kul aankda nahi.</small></p>
+<p><small id="noteLine">Note: Ye tool guarantee nahi deta. OTP/PIN kabhi share mat karo. Scam lage to 1930 par call karo ya cybercrime.gov.in par report karo. QR scan Chrome/Android par chalta hai.</small></p>
 </div>
 <script>
 //ENGINE-START
@@ -45,6 +47,7 @@ function scoreURL(raw, inMessage){
   try{u=new URL(/^https?:\/\//i.test(txt)?txt:"https://"+txt);}catch(e){return{score:20,reasons:[[20,"Link samajh nahi aaya — aise link par tap mat karo"]],hard:0,official:false,host:""};}
   const host=u.hostname.toLowerCase().replace(/\.$/,""), path=(u.pathname+" "+u.search).toLowerCase(), full=(host+path).toLowerCase();
   const official=isOfficial(host);
+  if(official){return{score:0,reasons:[[0,"Official domain match: "+host+" — whitelist me hai"]],hard:0,official:true,host,sensitive:SENS.some(w=>path.includes(w))};}
   if(/\.(apk|exe|scr|msi)(\?|$)/i.test(u.pathname)){hard=1;reasons.push([85,"Seedha APK/EXE download — bank/payment app aise install nahi hota"]);}
   const isIP=/^\d{1,3}(\.\d{1,3}){3}$/.test(host)||host.includes(":")||/^0x[0-9a-f]+$/i.test(host);
   const brandInHost=BRANDS.filter(b=>host.includes(b));
@@ -59,7 +62,6 @@ function scoreURL(raw, inMessage){
   if(host.includes("xn--")||/[^\x00-\x7F]/.test(host)){if(brandInHost.length||sensitive.length||lev(sld.replace(/^xn--/,""),"sbi")<=3){hard=1;reasons.push([85,"Punycode/homograph domain + sensitive page — asli brand ki nakal ho sakti hai"]);}else add(25,"Punycode (xn--) domain — akshar dhokha de sakte hain");}
   const freehost=FREEHOST.find(f=>host===f||host.endsWith("."+f));
   if(freehost&&(brandInHost.length||path.includes("login")||path.includes("signin"))){hard=1;reasons.push([85,"Free-hosting ("+freehost+") par brand ka login page — asli company aise host nahi karti"]);}
-  if(official){return{score:Math.min(score,15),reasons:reasons.length?reasons:[[0,"Official domain match: "+host+" — whitelist me hai"]],hard:0,official:true,host,sensitive:sensitive.length>0};}
   // Additive
   add(15,"Domain pehchana nahi gaya — kisi official list me nahi hai");
   if(isIP)add(35,"Host domain nahi, seedha IP address hai");
@@ -137,7 +139,7 @@ function scoreMessage(text){
 function scan(raw){
   const text=(raw||"").trim(); if(!text)return null;
   const urlMatch=text.match(/((https?:\/\/|www\.)[^\s]+|[\w\-]+(\.[\w\-]+)+\.[a-z]{2,}(:\d+)?(\/[^\s]*)?)/gi);
-  const vpaMatch=text.match(/[\w.\-]{2,}@[a-zA-Z]{2,}[\w]*/g);
+  const vpaMatch=text.match(/[\w.\-]{2,}@[a-zA-Z]{2,}[\w]*(?![\w]|\.[a-zA-Z])/g);
   const isSingle=text.split(/\s+/).length<=3&&!/[.!?]\s/.test(text);
   let results=[];
   if(/^\+?[\d\s\-()]{7,16}$/.test(text)&&text.replace(/\D/g,"").length>=7&&text.replace(/\D/g,"").length<=13){return scorePhone(text);}
@@ -168,7 +170,7 @@ function analyzeAll(text){
   const items=[]; const seen=new Set();
   const urlMatch=text.match(/((https?:\/\/|www\.)[^\s]+|[\w\-]+(\.[\w\-]+)+\.[a-z]{2,}(:\d+)?(\/[^\s]*)?)/gi)||[];
   for(const um of urlMatch){if(seen.has(um))continue;seen.add(um);const u=scoreURL(um,urlMatch.length>0&&text.trim()!==um);items.push({label:um,score:u.score,host:u.host,official:u.official});}
-  const vpaMatch=text.match(/[\w.\-]{2,}@[a-zA-Z]{2,}[\w]*/g)||[];
+  const vpaMatch=text.match(/[\w.\-]{2,}@[a-zA-Z]{2,}[\w]*(?![\w]|\.[a-zA-Z])/g)||[];
   for(const vm of vpaMatch){if(vm.includes("."))continue;if(seen.has(vm))continue;seen.add(vm);const v=scoreVPA(vm);items.push({label:vm,score:v.score});}
   return items;
 }
@@ -179,12 +181,43 @@ function band(s){return s>=85?["🔴 DANGER — Ruk jao, tap mat karo","dan","Ye
 <script>
 let LANG='hing', lastText='', lastResult=null, lastInput='';
 const T={hing:{danger:"🔴 DANGER — Ruk jao, tap mat karo",high:"🟠 HIGH RISK — Lagbhag pakka scam hai",cau:"🟡 CAUTION — Verify nahi ho paya",low:"🟢 LOW RISK — Koi strong scam signal nahi mila",
-gd:"Ye scam hone ke pakke sanket mile. Paisa/OTP bilkul mat do. 1930 par call karo ya cybercrime.gov.in par report karo.",gh:"Aage mat badho. Service ko uske official app se khud kholo.",gc:"Password, OTP ya payment tab tak mat karo jab tak official app/website se khud na pahuncho.",gl:"Iska matlab guarantee NAHI hai. Address khud padh kar hi aage badho — OTP/PIN kabhi share nahi hota.",reasons:"Kaaran (reasons)",items:"Har cheez ka alag score",anatomy:"Domain ki asaliyat"},
+gd:"Ye scam hone ke pakke sanket mile. Paisa/OTP bilkul mat do. 1930 par call karo ya cybercrime.gov.in par report karo.",gh:"Aage mat badho. Service ko uske official app se khud kholo.",gc:"Password, OTP ya payment tab tak mat karo jab tak official app/website se khud na pahuncho.",gl:"Iska matlab guarantee NAHI hai. Address khud padh kar hi aage badho — OTP/PIN kabhi share nahi hota.",reasons:"Kaaran (reasons)",items:"Har cheez ka alag score",anatomy:"Domain ki asaliyat",
+tagline:'Link, UPI ID, phone number, message ya QR — <b>tap karne se pehle</b> check karo. Pehle official-domain whitelist se verify hota hai; pehchana nahi gaya to "safe" kabhi nahi bolta.',
+honest:"Sach ye hai: ye koi cloud AI nahi hai — ye ek on-device heuristic risk engine hai. Saari jaanch tumhare phone/browser me hi hoti hai; tumhara data device se bahar kahi nahi jata.",
+stat:"📊 Kyun zaroori hai: I4C/NCRP ke hisaab se 2025 me 24,02,579 cyber-fraud complaints aayi aur citizens ne ₹22,495 crore ka nuksan report kiya (Source: PIB). Ye citizens dwara report kiya gaya amount hai — koi bank-loss ka kul aankda nahi.",
+ph:"Link / UPI ID / phone number / message paste karo",scan:"🔍 Scan Karo",voice:"🔊 Voice Alert",voicein:"🎤 Bolkar Batao",elder:"👴 Bade Akshar (Elder Mode)",qr:"📷 QR Photo Scan",samples:"Samples:",
+demos:["Scam KYC link","Asli SBI","Meesho nakli offer","Digital Arrest msg","Personal number se officer","Asli PNB"],
+note:"Note: Ye tool guarantee nahi deta. OTP/PIN kabhi share mat karo. Scam lage to 1930 par call karo ya cybercrime.gov.in par report karo. QR scan Chrome/Android par chalta hai.",
+hist:"🕘 Pichhle scans:",empty:"Pehle kuch paste karo.",catH:"📊 Category score:",nopat:"Koi khaas pattern nahi mila",
+sub:"Subdomain:",reald:"Asli domain:",offYes:"✅ <b>Official whitelist me hai</b>",offNo:"⚠️ Official list me NAHI hai",
+copy:"📋 Report Copy Karo",wa:"📲 Family ko WhatsApp Alert",call1930:"📞 1930 par Call Karo",
+copied:"Report copy ho gaya",copyfail:"Copy nahi ho paya — report ko khud select karke copy karo",
+scanFirst:"Pehle Scan karo",noVoiceIn:"Is browser me voice input nahi hai",
+qrNo:"⚠️ Is browser me QR scan supported nahi hai — QR wala link/UPI type karke dalo.",qrFail:"QR code padh nahi paya — saaf photo try karo.",qrErr:"QR scan me dikkat aayi — link type karke dalo."},
 hindi:{danger:"🔴 खतरा — रुक जाओ, टैप मत करो",high:"🟠 उच्च जोखिम — लगभग पक्का घोटाला है",cau:"🟡 सावधान — सत्यापित नहीं हो पाया",low:"🟢 कम जोखिम — कोई मजबूत घोटाले का संकेत नहीं मिला",
-gd:"यह घोटाला होने के पक्के संकेत मिले। पैसा/OTP बिल्कुल मत दो। 1930 पर कॉल करो या cybercrime.gov.in पर रिपोर्ट करो।",gh:"आगे मत बढ़ो। सेवा को उसके आधिकारिक ऐप से खुद खोलो।",gc:"पासवर्ड, OTP या भुगतान तब तक मत करो जब तक आधिकारिक ऐप/वेबसाइट से खुद न पहुँचो।",gl:"इसका मतलब गारंटी नहीं है। पता खुद पढ़कर ही आगे बढ़ो — OTP/PIN कभी साझा नहीं होता।",reasons:"कारण",items:"हर चीज़ का अलग स्कोर",anatomy:"डोमेन की असलियत"}};
-function setLang(l){LANG=l;}
+gd:"यह घोटाला होने के पक्के संकेत मिले। पैसा/OTP बिल्कुल मत दो। 1930 पर कॉल करो या cybercrime.gov.in पर रिपोर्ट करो।",gh:"आगे मत बढ़ो। सेवा को उसके आधिकारिक ऐप से खुद खोलो।",gc:"पासवर्ड, OTP या भुगतान तब तक मत करो जब तक आधिकारिक ऐप/वेबसाइट से खुद न पहुँचो।",gl:"इसका मतलब गारंटी नहीं है। पता खुद पढ़कर ही आगे बढ़ो — OTP/PIN कभी साझा नहीं होता।",reasons:"कारण",items:"हर चीज़ का अलग स्कोर",anatomy:"डोमेन की असलियत",
+tagline:'लिंक, UPI ID, फ़ोन नंबर, संदेश या QR — <b>टैप करने से पहले</b> जाँचो। पहले आधिकारिक-डोमेन व्हाइटलिस्ट से सत्यापन होता है; पहचाना नहीं गया तो "सुरक्षित" कभी नहीं बोलता।',
+honest:"सच यह है: यह कोई cloud AI नहीं है — यह एक on-device heuristic risk engine है। सारी जाँच तुम्हारे फ़ोन/browser में ही होती है; तुम्हारा डेटा डिवाइस से बाहर कहीं नहीं जाता।",
+stat:"📊 क्यों ज़रूरी है: I4C/NCRP के अनुसार 2025 में 24,02,579 साइबर-धोखाधड़ी शिकायतें आईं और नागरिकों ने ₹22,495 करोड़ का नुकसान report किया (स्रोत: PIB)। यह नागरिकों द्वारा report किया गया amount है — कोई bank-loss का कुल आँकड़ा नहीं।",
+ph:"लिंक / UPI ID / फ़ोन नंबर / संदेश यहाँ डालो",scan:"🔍 स्कैन करो",voice:"🔊 आवाज़ चेतावनी",voicein:"🎤 बोलकर बताओ",elder:"👴 बड़े अक्षर (Elder Mode)",qr:"📷 QR फ़ोटो स्कैन",samples:"उदाहरण:",
+demos:["घोटाला KYC लिंक","असली SBI","Meesho नकली ऑफ़र","डिजिटल अरेस्ट संदेश","निजी नंबर से अधिकारी","असली PNB"],
+note:"नोट: यह टूल गारंटी नहीं देता। OTP/PIN कभी साझा मत करो। घोटाला लगे तो 1930 पर कॉल करो या cybercrime.gov.in पर रिपोर्ट करो। QR स्कैन Chrome/Android पर चलता है।",
+hist:"🕘 पिछले स्कैन:",empty:"पहले कुछ डालो।",catH:"📊 श्रेणी स्कोर:",nopat:"कोई खास पैटर्न नहीं मिला",
+sub:"सबडोमेन:",reald:"असली डोमेन:",offYes:"✅ <b>आधिकारिक व्हाइटलिस्ट में है</b>",offNo:"⚠️ आधिकारिक सूची में नहीं है",
+copy:"📋 रिपोर्ट कॉपी करो",wa:"📲 परिवार को WhatsApp अलर्ट",call1930:"📞 1930 पर कॉल करो",
+copied:"रिपोर्ट कॉपी हो गया",copyfail:"कॉपी नहीं हो पाया — रिपोर्ट को खुद चुनकर कॉपी करो",
+scanFirst:"पहले स्कैन करो",noVoiceIn:"इस browser में voice input नहीं है",
+qrNo:"⚠️ इस browser में QR स्कैन समर्थित नहीं है — QR वाला लिंक/UPI टाइप करके डालो।",qrFail:"QR code पढ़ नहीं पाया — साफ़ फ़ोटो try करो।",qrErr:"QR स्कैन में दिक्कत आई — लिंक टाइप करके डालो।"}};
+function setLang(l){LANG=l;const t=T[LANG];const S=(id,txt)=>{const e=document.getElementById(id);if(e)e.textContent=txt;};
+const tg=document.getElementById('tagline');if(tg)tg.innerHTML=t.tagline;
+const inpEl=document.getElementById('inp');if(inpEl)inpEl.placeholder=t.ph;
+const hn=document.getElementById('honestLine');if(hn)hn.textContent=t.honest;
+const st=document.getElementById('statLine');if(st)st.textContent=t.stat;
+S('scanBtn',t.scan);S('voiceBtn',t.voice);S('voiceInBtn',t.voicein);S('elderBtn',t.elder);S('qrLbl',t.qr);S('samplesH',t.samples);S('noteLine',t.note);
+t.demos.forEach((d,i)=>S('demo'+i,d));renderHist();}
 function bandText(s){const t=T[LANG];return s>=85?[t.danger,'dan',t.gd]:s>=55?[t.high,'high',t.gh]:s>=25?[t.cau,'cau',t.gc]:[t.low,'low',t.gl];}
 function nrm(r){return Array.isArray(r)?r:[0,r];}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function cats(reasons){const c={'Pehchan (Identity)':0,'Link Banawat':0,'Message Pattern':0,'Payment/UPI':0};
 for(const r0 of reasons){const [p,txt]=nrm(r0);const t=(txt||'').toLowerCase();
 if(/brand|impersonation|official|typosquat|puny|homograph|@|ip address|handle/.test(t))c['Pehchan (Identity)']+=p;
@@ -194,26 +227,25 @@ else c['Message Pattern']+=p;}
 for(const k in c)c[k]=Math.min(c[k],100);return c;}
 function anatomy(raw){try{const u=new URL(/^https?:\/\//i.test(raw)?raw:'https://'+raw);const host=u.hostname;const reg=registrable(host);const sub=host===reg?'—':host.slice(0,host.length-reg.length-1);const tld=host.split('.').pop();const off=isOfficial(host);return{sub,reg,tld,off};}catch(e){return null;}}
 function saveHist(q,s){try{let h=JSON.parse(localStorage.getItem('ss_hist')||'[]');h.unshift({q:q.slice(0,45),s});h=h.slice(0,5);localStorage.setItem('ss_hist',JSON.stringify(h));renderHist();}catch(e){}}
-function renderHist(){try{const h=JSON.parse(localStorage.getItem('ss_hist')||'[]');if(!h.length)return;document.getElementById('histBox').innerHTML='<h3>🕘 Pichhle scans:</h3>'+h.map(x=>'<span class="chip hist" onclick="reScan(this)" data-q="'+x.q.replace(/"/g,'')+'">'+x.q+'… — <b>'+x.s+'/100</b></span>').join('');}catch(e){}}
-function reScan(el){document.getElementById('inp').value=el.getAttribute('data-q');run();}
-function run(){const v=document.getElementById('inp').value;lastInput=v;const r=scan(v);if(!r){document.getElementById('out').innerHTML='<p>Pehle kuch paste karo.</p>';return;}lastResult=r;
+function renderHist(){try{const h=JSON.parse(localStorage.getItem('ss_hist')||'[]');const box=document.getElementById('histBox');box.innerHTML='';if(!h.length)return;const hd=document.createElement('h3');hd.textContent=T[LANG].hist;box.appendChild(hd);for(const x of h){const sp=document.createElement('span');sp.className='chip hist';sp.textContent=String(x.q)+'… — ';const b=document.createElement('b');b.textContent=x.s+'/100';sp.appendChild(b);sp.addEventListener('click',()=>{document.getElementById('inp').value=x.q;run();});box.appendChild(sp);}}catch(e){}}
+function run(){const v=document.getElementById('inp').value;lastInput=v;const r=scan(v);if(!r){document.getElementById('out').innerHTML='<p>'+T[LANG].empty+'</p>';return;}lastResult=r;
 const b=bandText(r.score);lastText=b[0]+'. Risk score '+r.score+' out of 100. '+r.reasons.slice(0,3).map(x=>nrm(x)[1]).join('. ');
 const col=r.score>=85?'#f87171':r.score>=55?'#fb923c':r.score>=25?'#facc15':'#4ade80';
 let h='<div class="meter"><div class="fill" style="width:'+r.score+'%;background:'+col+'"></div></div><p class="score '+b[1]+'">'+r.score+'/100</p><h2 class="'+b[1]+'">'+b[0]+'</h2><p>'+b[2]+'</p>';
-const c=cats(r.reasons);h+='<h3>📊 Category score:</h3>'+Object.keys(c).map(k=>'<div class="row"><span>'+k+'</span><div class="mini"><div class="fill" style="width:'+c[k]+'%;background:'+col+';height:100%"></div></div><b>'+c[k]+'</b></div>').join('');
-const items=analyzeAll(v);if(items.length>1){h+='<h3>🔎 '+T[LANG].items+':</h3><table><tr><th>Cheez</th><th>Score</th></tr>'+items.map(i=>'<tr><td>'+i.label+(i.official?' ✅ official':'')+'</td><td><b>'+i.score+'/100</b></td></tr>').join('')+'</table>';}
+const c=cats(r.reasons);h+='<h3>'+T[LANG].catH+'</h3>'+Object.keys(c).map(k=>'<div class="row"><span>'+k+'</span><div class="mini"><div class="fill" style="width:'+c[k]+'%;background:'+col+';height:100%"></div></div><b>'+c[k]+'</b></div>').join('');
+const items=analyzeAll(v);if(items.length>1){h+='<h3>🔎 '+T[LANG].items+':</h3><table><tr><th>Cheez</th><th>Score</th></tr>'+items.map(i=>'<tr><td>'+esc(i.label)+(i.official?' ✅ official':'')+'</td><td><b>'+i.score+'/100</b></td></tr>').join('')+'</table>';}
 const first=(v.match(/((https?:\/\/|www\.)[^\s]+|[\w\-]+(\.[\w\-]+)+\.[a-z]{2,}(\/[^\s]*)?)/i)||[])[0];
-if(first){const a=anatomy(first);if(a)h+='<h3>🧬 '+T[LANG].anatomy+':</h3><p>Subdomain: <span class="chip">'+a.sub+'</span> Asli domain: <span class="chip"><b>'+a.reg+'</b></span> TLD: <span class="chip">.'+a.tld+'</span> '+(a.off?'✅ <b>Official whitelist me hai</b>':'⚠️ Official list me NAHI hai')+'</p>';}
-h+='<h3>'+T[LANG].reasons+':</h3><ul>'+(r.reasons.length?r.reasons.slice(0,7).map(x=>{const [p,txt]=nrm(x);return '<li><b>+'+p+'</b> — '+txt+'</li>';}).join(''):'<li>Koi khaas pattern nahi mila</li>')+'</ul>';
-h+='<div><button onclick="copyReport()">📋 Report Copy Karo</button><button class="purple" onclick="waAlert()">📲 Family ko WhatsApp Alert</button>'+(r.score>=55?'<a href="tel:1930"><button style="background:#dc2626">📞 1930 par Call Karo</button></a>':'')+'</div>';
+if(first){const a=anatomy(first);if(a)h+='<h3>🧬 '+T[LANG].anatomy+':</h3><p>'+T[LANG].sub+' <span class="chip">'+esc(a.sub)+'</span> '+T[LANG].reald+' <span class="chip"><b>'+esc(a.reg)+'</b></span> TLD: <span class="chip">.'+esc(a.tld)+'</span> '+(a.off?T[LANG].offYes:T[LANG].offNo)+'</p>';}
+h+='<h3>'+T[LANG].reasons+':</h3><ul>'+(r.reasons.length?r.reasons.slice(0,7).map(x=>{const [p,txt]=nrm(x);return '<li><b>+'+p+'</b> — '+esc(txt)+'</li>';}).join(''):'<li>'+T[LANG].nopat+'</li>')+'</ul>';
+h+='<div><button onclick="copyReport()">'+T[LANG].copy+'</button><button class="purple" onclick="waAlert()">'+T[LANG].wa+'</button>'+(r.score>=55?'<a href="tel:1930"><button style="background:#dc2626">'+T[LANG].call1930+'</button></a>':'')+'</div>';
 document.getElementById('out').innerHTML=h;saveHist(v,r.score);}
 function reportText(){if(!lastResult)return '';const b=bandText(lastResult.score);return '🛡️ Suraksha Setu Scan\nInput: '+lastInput.slice(0,120)+'\nScore: '+lastResult.score+'/100 — '+b[0]+'\nReasons: '+lastResult.reasons.slice(0,3).map(x=>nrm(x)[1]).join('; ')+'\nCheck khud karo: https://adityasunny06help-coder.github.io/suraksha-setu-prototype/';}
-function copyReport(){navigator.clipboard&&navigator.clipboard.writeText(reportText());alert('Report copy ho gaya');}
+function copyReport(){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(reportText()).then(()=>alert(T[LANG].copied)).catch(()=>alert(T[LANG].copyfail));}else alert(T[LANG].copyfail);}
 function waAlert(){window.open('https://wa.me/?text='+encodeURIComponent('⚠️ Family Alert — ye mujhe aaya hai, paisa/OTP mat dena. Pehle check karo:\n\n'+reportText()),'_blank');}
-function speak(){if(lastText&&'speechSynthesis' in window){const u=new SpeechSynthesisUtterance(lastText);u.lang='hi-IN';speechSynthesis.speak(u);}else alert('Pehle Scan karo');}
-function voiceIn(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert('Is browser me voice input nahi hai');return;}const r=new SR();r.lang='hi-IN';r.onresult=e=>{document.getElementById('inp').value=e.results[0][0].transcript;run();};r.start();}
-async function qrScan(inp){const f=inp.files[0];if(!f)return;if(!('BarcodeDetector' in window)){document.getElementById('out').innerHTML='<p>⚠️ Is browser me QR scan supported nahi hai — QR wala link/UPI type karke dalo.</p>';return;}
-try{const bmp=await createImageBitmap(f);const det=new BarcodeDetector({formats:['qr_code']});const codes=await det.detect(bmp);if(codes.length){document.getElementById('inp').value=codes[0].rawValue;run();}else document.getElementById('out').innerHTML='<p>QR code padh nahi paya — saaf photo try karo.</p>';}catch(e){document.getElementById('out').innerHTML='<p>QR scan me dikkat aayi — link type karke dalo.</p>';}}
+function speak(){if(lastText&&'speechSynthesis' in window){const u=new SpeechSynthesisUtterance(lastText);u.lang='hi-IN';speechSynthesis.speak(u);}else alert(T[LANG].scanFirst);}
+function voiceIn(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert(T[LANG].noVoiceIn);return;}const r=new SR();r.lang='hi-IN';r.onresult=e=>{document.getElementById('inp').value=e.results[0][0].transcript;run();};r.start();}
+async function qrScan(inp){const f=inp.files[0];if(!f)return;if(!('BarcodeDetector' in window)){document.getElementById('out').innerHTML='<p>'+T[LANG].qrNo+'</p>';return;}
+try{const bmp=await createImageBitmap(f);const det=new BarcodeDetector({formats:['qr_code']});const codes=await det.detect(bmp);if(codes.length){document.getElementById('inp').value=codes[0].rawValue;run();}else document.getElementById('out').innerHTML='<p>'+T[LANG].qrFail+'</p>';}catch(e){document.getElementById('out').innerHTML='<p>'+T[LANG].qrErr+'</p>';}}
 const samples=["https://sbi-kyc-verify.top/login","https://www.sbi.bank.in","https://meesho-offer-free.vercel.app/login","I am CBI officer. A parcel with drugs in your name is seized. You are under digital arrest. Stay on WhatsApp video call, tell no one, transfer money to RBI verification account.","9876543210","https://www.pnbindia.in"];
 function demo(i){document.getElementById('inp').value=samples[i];run();}
 renderHist();
