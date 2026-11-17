@@ -65,7 +65,10 @@ def check(body: CheckIn):
     dom = engine.extract_domain(text)
     age = None
     if dom:
-        raw_age = rdap.domain_age(dom["registrable"])
+        try:
+            raw_age = rdap.domain_age(dom["registrable"])
+        except Exception:
+            raw_age = None  # enrichment signal hai — iske fail hone par main jawab kabhi 500 nahi hona chahiye
         if raw_age is not None:
             pts, note = rdap.risk_points(raw_age)
             age = dict(raw_age)

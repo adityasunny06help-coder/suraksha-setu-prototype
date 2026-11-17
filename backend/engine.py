@@ -18,6 +18,7 @@ OFFICIAL = {
     "paytm": ["paytm.com", "paytmbank.com"], "phonepe": ["phonepe.com"], "amazon": ["amazon.in", "amazon.com"], "flipkart": ["flipkart.com"],
     "irctc": ["irctc.co.in"], "uidai": ["uidai.gov.in"], "aadhaar": ["uidai.gov.in"], "npci": ["npci.org.in"], "indiapost": ["indiapost.gov.in"],
     "parivahan": ["parivahan.gov.in"], "google": ["google.com"], "lic": ["licindia.in"], "epfo": ["epfindia.gov.in"], "jio": ["jio.com"], "airtel": ["airtel.in"], "pnb": ["pnbindia.in"], "bankofbaroda": ["bankofbaroda.in"], "canara": ["canarabank.com", "canarabank.in"], "unionbank": ["unionbankofindia.co.in"], "meesho": ["meesho.com"], "myntra": ["myntra.com"], "delhivery": ["delhivery.com"], "dtdc": ["dtdc.in"], "bluedart": ["bluedart.com"],
+    "paypal": ["paypal.com", "paypal.me"], "whatsapp": ["whatsapp.com", "wa.me"], "microsoft": ["microsoft.com", "microsoftonline.com", "live.com", "outlook.com"], "netflix": ["netflix.com"], "instagram": ["instagram.com"], "telegram": ["telegram.org", "telegram.me", "t.me"],
 }
 ALL_OFFICIAL = [d for v in OFFICIAL.values() for d in v]
 BRANDS = list(OFFICIAL.keys())
@@ -189,13 +190,18 @@ def score_vpa(vpa):
     look = None
     if handle not in HANDLES:
         look = next((h for h in HANDLES if h != handle and 1 <= lev(handle, h) <= 2 and len(h) >= 6), None)
-    brand_local = next((b for b in BRANDS if b in local), None) or any(w in local for w in ("refund", "cashback", "prize", "reward"))
+    brand_name = next((b for b in BRANDS if b in local), None)
+    lure = next((w for w in ("refund", "cashback", "prize", "reward") if w in local), None)
+    brand_local = brand_name or lure
     if look:
         score = max(score + 40, 55)
         reasons.append([40, "Handle '@" + handle + "' asli '@" + look + "' se ek akshar alag hai — nakli handle ho sakta hai"])
-    if brand_local:
+    if brand_name:
         score += 20
-        reasons.append([20, "UPI naam me brand/lure word hai ('" + local + "') — koi bhi aisa naam bana sakta hai, ye proof nahi hai"])
+        reasons.append([20, "UPI naam me brand word hai ('" + local + "') — koi bhi aisa naam bana sakta hai, ye proof nahi hai"])
+    if lure and not look:
+        score = max(score + 20, 55)
+        reasons.append([20, "UPI naam me lure word hai ('" + lure + "') — paisa paane ka jhansa dene wale naam scam me aam hain, pehle verify karo"])
     if brand_local and (handle not in HANDLES or look):
         hard = 1
         reasons.append([85, "Brand wala naam + galat/nakli handle — UPI scam pattern"])
@@ -234,13 +240,13 @@ def score_message(text):
     if not hard and auth_sig >= 3:
         hard = 1
         clusters.append([85, "Digital-arrest pattern: officer ka daava + video call + parcel/drugs ya secrecy + paisa transfer"])
-    if re.search(r"pin[^.]{0,50}(to receive|receive karne|paise paane|refund paane)|(receive|refund)[^.]{0,50}(enter|daalo|share|type)[^.]{0,25}(pin|otp)", t) or has("collect request approve karke pin", "approve the collect request and enter"):
+    if re.search(r"pin[^.]{0,50}(to receive|receive karne|receive karo|paise paane|refund paane)|(receive|refund)[^.]{0,50}(enter|daalo|share|type)[^.]{0,25}(pin|otp)", t) or has("collect request approve karke pin", "approve the collect request and enter") or (has("collect request") and has("pin", "upi pin")):
         hard = 1
         clusters.append([85, "PIN daal kar paisa RECEIVE nahi hota — UPI PIN sirf paisa DENE ke liye hota hai (NPCI niyam). Ye pakka scam hai"])
-    if has("prepaid task", "pre-paid task") or re.search(r"(deposit|jama)[^.]{0,40}(earn|profit|wapas.*double|get ₹|get rs)", t):
+    if has("prepaid task", "pre-paid task") or re.search(r"(deposit|jama)[^.]{0,40}(earn|profit|wapas.*double|get ₹|get rs)", t) or re.search(r"(deposit|jama)[^.]{0,60}(task|like|telegram)|(task|like)[^.]{0,60}(deposit|jama)", t):
         hard = 1
         clusters.append([85, "Task scam: pehle paise jama karwa kar 'profit' ka jhansa — paisa gaya to wapas nahi aata"])
-    if has("fee", "charge", "deposit") and has("withdraw", "unfreeze", "release your"):
+    if (has("fee", "charge", "deposit") and has("withdraw", "unfreeze")) or (has("fee", "charge", "deposit") and has("release your") and has("profit", "balance", "funds", "money", "amount", "investment", "crypto", "wallet", "earning")):
         hard = 1
         clusters.append([85, "Paisa nikaalne ke liye pehle fee — investment scam ki pakki pehchan"])
     if has("intimate video", "private video viral", "video viral kar dunga", "sextortion"):
@@ -256,10 +262,10 @@ def score_message(text):
 
     if has("kyc") and has("expire", "expired", "block", "update", "pending", "suspend", "बंद", "ब्लॉक"):
         set_c(35, "KYC scam pattern — bank KYC kabhi SMS/WhatsApp link se nahi karte (RBI)")
-    if has("parcel", "courier", "package") and has("drugs", "seized", "customs fee", "customs duty", "clearance fee"):
+    if has("parcel", "courier", "package") and has("drugs", "seized", "customs fee", "customs duty", "clearance"):
         set_c(30, "Courier/customs scam pattern — parcel ke naam par fee vasuli")
     if has("electricity", "bijli", "बिजली") and has("disconnect", "cut", "kaat", "डिस्कनेक्ट"):
-        set_c(30, "Bijli disconnect scam — board kabhi aise message se turant paisa nahi maangta")
+        set_c(35, "Bijli disconnect scam — board kabhi aise message se turant paisa nahi maangta")
     if has("challan") and has("pay", "link", "http"):
         set_c(30, "Challan scam pattern — asli challan sirf parivahan.gov.in par bharo")
     if has("customer care", "customercare", "helpline number") and has("call", "number", "संपर्क"):
@@ -268,7 +274,7 @@ def score_message(text):
         set_c(35, "Loan scam — asli loan pehle fee nahi maangta")
     if has("guaranteed return", "guaranteed profit", "double money", "paisa double", "100% profit", "daily profit"):
         set_c(30, "Guaranteed/double profit — aisi guarantee sirf scam deta hai")
-    if has("like karo", "like videos", "youtube video like", "telegram group", "telegram channel") and has("earn", "daily", "₹", "rs "):
+    if has("like karo", "like videos", "youtube video like", "telegram group", "telegram channel") and has("earn", "daily", "₹", "rs ", "kamao", "kamai"):
         set_c(25, "Task/job scam pattern — like karke hazaron kamai ka jhansa")
     if cluster:
         clusters.append([cluster, cluster_name])
@@ -281,8 +287,11 @@ def score_message(text):
             reasons.append([p, r])
 
     cross(bool(re.search(r"(share|batao|send|enter|daalo|type)[^.]{0,25}(otp|pin|cvv|password)", t)) or has("otp batao", "share otp", "otp share"), 25, "OTP/PIN/CVV maangna — bank ya koi officer kabhi nahi maangta")
-    cross(has("install", "download karo", "apk") and has("app", "apk", "anydesk", "teamviewer", "quicksupport", "screen share"), 20, "App/APK install ya screen-share karwana — phone ka control dena hai")
-    cross(has("tonight", "today", "abhi", "turant", "within 2 hour", "within few hour", "last chance", "blocked today", "expire ho jayega", "तुरंत", "आज ही"), 10, "Turant/band hone ka pressure — sochne ka time na dena scam ki chaal hai")
+    cross(bool(re.search(r"(share|sharing|batao|send|daalo)[^.]{0,30}(6-digit code|verification code)", t)), 25, "Verification code maangna — asli company apna bheja hua code kabhi share karne ko nahi kehti")
+    apk_word = bool(re.search(r"\bapk\b", t, A))
+    ss_tool = has("anydesk", "teamviewer", "quicksupport", "screen share")
+    cross((has("install", "download karo") or apk_word) and (has("app") or apk_word or ss_tool), 35 if ss_tool else 20, "App/APK install ya screen-share karwana — phone ka control dena hai")
+    cross(has("tonight", "today", "within 2 hour", "within few hour", "last chance", "blocked today", "expire ho jayega", "तुरंत", "आज ही") or bool(re.search(r"(^|[^a-zA-Z])(abhi|turant)(?![a-zA-Z])", t)), 10, "Turant/band hone ka pressure — sochne ka time na dena scam ki chaal hai")
     cross(has("tell no one", "kisi ko mat batao", "secret rakho", "गुप्त रखो"), 10, "Chhupane ko kehna — asli authority kabhi nahi kehti")
     cross(has("lottery", "won", "prize", "cashback milega", "free gift", "inaam", "इनाम"), 10, "Lottery/prize/cashback ka lalach")
     cross(has("electricity officer", "officer ka number", "call karo") and bool(re.search(r"[0-9]{10}", t)), 10, "Officer ka personal mobile number — official kaam personal number se nahi hota")
@@ -315,6 +324,9 @@ def scan(raw):
     text = (raw or "").strip()
     if not text:
         return None
+    if re.match(r"^(data|javascript|blob|file):", text, re.I):
+        u = score_url(text, False)
+        return {"score": u["score"], "reasons": u["reasons"], "hard": u["hard"], "kind": "Link", "official": u["official"]}
     url_match = [m.group(0) for m in URL_RE.finditer(text)]
     vpa_match = [m.group(0) for m in VPA_RE.finditer(text)]
     is_single = len(text.split()) <= 3 and not re.search(r"[.!?]\s", text)
