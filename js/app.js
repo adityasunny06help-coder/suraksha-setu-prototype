@@ -43,7 +43,7 @@ function copyReport(){
 
 function waAlert(){
   window.open('https://wa.me/?text=' + encodeURIComponent(
-    '⚠️ Family Alert — ye mujhe aaya hai, paisa/OTP mat dena. Pehle check karo:\n\n'
+    getT().waMsg + '\n\n'
     + buildReportText(lastResult, lastInput)), '_blank');
 }
 

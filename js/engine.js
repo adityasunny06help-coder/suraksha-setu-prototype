@@ -4,7 +4,8 @@ export const OFFICIAL = {
  icici:["icici.bank.in","icicibank.com"], axis:["axisbank.com","axis.bank.in"], kotak:["kotak.bank.in","kotak.com"],
  paytm:["paytm.com","paytmbank.com"], phonepe:["phonepe.com"], amazon:["amazon.in","amazon.com"], flipkart:["flipkart.com"],
  irctc:["irctc.co.in"], uidai:["uidai.gov.in"], aadhaar:["uidai.gov.in"], npci:["npci.org.in"], indiapost:["indiapost.gov.in"],
- parivahan:["parivahan.gov.in"], google:["google.com"], lic:["licindia.in"], epfo:["epfindia.gov.in"], jio:["jio.com"], airtel:["airtel.in"], pnb:["pnbindia.in"], bankofbaroda:["bankofbaroda.in"], canara:["canarabank.com","canarabank.in"], unionbank:["unionbankofindia.co.in"], meesho:["meesho.com"], myntra:["myntra.com"], delhivery:["delhivery.com"], dtdc:["dtdc.in"], bluedart:["bluedart.com"]
+ parivahan:["parivahan.gov.in"], google:["google.com"], lic:["licindia.in"], epfo:["epfindia.gov.in"], jio:["jio.com"], airtel:["airtel.in"], pnb:["pnbindia.in"], bankofbaroda:["bankofbaroda.in"], canara:["canarabank.com","canarabank.in"], unionbank:["unionbankofindia.co.in"], meesho:["meesho.com"], myntra:["myntra.com"], delhivery:["delhivery.com"], dtdc:["dtdc.in"], bluedart:["bluedart.com"],
+ paypal:["paypal.com","paypal.me"], whatsapp:["whatsapp.com","wa.me"], microsoft:["microsoft.com","microsoftonline.com","live.com","outlook.com"], netflix:["netflix.com"], instagram:["instagram.com"], telegram:["telegram.org","telegram.me","t.me"]
 };
 export const ALL_OFFICIAL = Object.values(OFFICIAL).flat();
 export const BRANDS = Object.keys(OFFICIAL);
@@ -71,9 +72,12 @@ export function scoreVPA(vpa){
   if(!m)return{score:20,reasons:[[20,"UPI ID ka format sahi nahi lag raha"]],hard:0};
   const local=m[1],handle=m[2];
   const look=HANDLES.includes(handle)?null:HANDLES.find(h=>h!==handle&&lev(handle,h)>=1&&lev(handle,h)<=2&&h.length>=6);
-  const brandLocal=BRANDS.find(b=>local.includes(b))||(local.includes("refund")||local.includes("cashback")||local.includes("prize")||local.includes("reward"));
+  const brandName=BRANDS.find(b=>local.includes(b));
+  const lure=["refund","cashback","prize","reward"].find(w=>local.includes(w));
+  const brandLocal=brandName||lure;
   if(look){score=Math.max(score+40,55);reasons.push([40,"Handle '@"+handle+"' asli '@"+look+"' se ek akshar alag hai — nakli handle ho sakta hai"]);}
-  if(brandLocal){score+=20;reasons.push([20,"UPI naam me brand/lure word hai ('"+local+"') — koi bhi aisa naam bana sakta hai, ye proof nahi hai"]);}
+  if(brandName){score+=20;reasons.push([20,"UPI naam me brand word hai ('"+local+"') — koi bhi aisa naam bana sakta hai, ye proof nahi hai"]);}
+  if(lure&&!look){score=Math.max(score+20,55);reasons.push([20,"UPI naam me lure word hai ('"+lure+"') — paisa paane ka jhansa dene wale naam scam me aam hain, pehle verify karo"]);}
   if(brandLocal&&(!HANDLES.includes(handle)||look)){hard=1;reasons.push([85,"Brand wala naam + galat/nakli handle — UPI scam pattern"]);}
   if(!HANDLES.includes(handle)&&!look){score=Math.max(score+15,35);reasons.push([15,"Handle '@"+handle+"' jaane-pehchane bank/app handles me nahi hai — payee verify nahi ho paya"]);}
   if(HANDLES.includes(handle)&&!score){score=20;reasons.push([[20],"Handle asli list me hai, LEKIN isse payee asli sabit nahi hota — app me dikhne wala NAAM apne jaankari se match karo"][1]||"Handle asli list me hai, LEKIN isse payee asli sabit nahi hota — app me dikhne wala naam match karo");}
@@ -88,28 +92,30 @@ export function scoreMessage(text){
   if(has("digital arrest","डिजिटल अरेस्ट","digital custody")){hard=1;clusters.push([85,"DIGITAL ARREST scam — CBI/Police/Customs kabhi video call par arrest nahi karte (I4C advisory)"]);}
   const authSig=[has("cbi","ed officer","customs officer","police officer","rbi officer","enforcement directorate"),has("video call","whatsapp video","skype call"),has("parcel","drugs","money laundering","seized"),has("tell no one","kisi ko mat bata","secret","गुप्त"),has("verification account","transfer karo","transfer now")].filter(Boolean).length;
   if(!hard&&authSig>=3){hard=1;clusters.push([85,"Digital-arrest pattern: officer ka daava + video call + parcel/drugs ya secrecy + paisa transfer"]);}
-  if(/pin[^.]{0,50}(to receive|receive karne|paise paane|refund paane)|(receive|refund)[^.]{0,50}(enter|daalo|share|type)[^.]{0,25}(pin|otp)/.test(t)||has("collect request approve karke pin","approve the collect request and enter")){hard=1;clusters.push([85,"PIN daal kar paisa RECEIVE nahi hota — UPI PIN sirf paisa DENE ke liye hota hai (NPCI niyam). Ye pakka scam hai"]);}
-  if(has("prepaid task","pre-paid task")||/(deposit|jama)[^.]{0,40}(earn|profit|wapas.*double|get ₹|get rs)/.test(t)){hard=1;clusters.push([85,"Task scam: pehle paise jama karwa kar 'profit' ka jhansa — paisa gaya to wapas nahi aata"]);}
-  if((has("fee","charge","deposit")&&has("withdraw","unfreeze","release your"))){hard=1;clusters.push([85,"Paisa nikaalne ke liye pehle fee — investment scam ki pakki pehchan"]);}
+  if(/pin[^.]{0,50}(to receive|receive karne|receive karo|paise paane|refund paane)|(receive|refund)[^.]{0,50}(enter|daalo|share|type)[^.]{0,25}(pin|otp)/.test(t)||has("collect request approve karke pin","approve the collect request and enter")||(has("collect request")&&has("pin","upi pin"))){hard=1;clusters.push([85,"PIN daal kar paisa RECEIVE nahi hota — UPI PIN sirf paisa DENE ke liye hota hai (NPCI niyam). Ye pakka scam hai"]);}
+  if(has("prepaid task","pre-paid task")||/(deposit|jama)[^.]{0,40}(earn|profit|wapas.*double|get ₹|get rs)/.test(t)||/(deposit|jama)[^.]{0,60}(task|like|telegram)|(task|like)[^.]{0,60}(deposit|jama)/.test(t)){hard=1;clusters.push([85,"Task scam: pehle paise jama karwa kar 'profit' ka jhansa — paisa gaya to wapas nahi aata"]);}
+  if((has("fee","charge","deposit")&&has("withdraw","unfreeze"))||(has("fee","charge","deposit")&&has("release your")&&has("profit","balance","funds","money","amount","investment","crypto","wallet","earning"))){hard=1;clusters.push([85,"Paisa nikaalne ke liye pehle fee — investment scam ki pakki pehchan"]);}
   if(has("intimate video","private video viral","video viral kar dunga","sextortion")){hard=1;clusters.push([85,"Sextortion/blackmail pattern — paisa mat do, 1930 par report karo"]);}
   // Clusters (take max cluster, then cross-cutting)
   let cluster=0,clusterName="";
   const setC=(p,r)=>{if(p>cluster){cluster=p;clusterName=r;}};
   if(has("kyc")&&has("expire","expired","block","update","pending","suspend","बंद","ब्लॉक"))setC(35,"KYC scam pattern — bank KYC kabhi SMS/WhatsApp link se nahi karte (RBI)");
-  if(has("parcel","courier","package")&&has("drugs","seized","customs fee","customs duty","clearance fee"))setC(30,"Courier/customs scam pattern — parcel ke naam par fee vasuli");
-  if(has("electricity","bijli","बिजली")&&has("disconnect","cut","kaat","डिस्कनेक्ट"))setC(30,"Bijli disconnect scam — board kabhi aise message se turant paisa nahi maangta");
+  if(has("parcel","courier","package")&&has("drugs","seized","customs fee","customs duty","clearance"))setC(30,"Courier/customs scam pattern — parcel ke naam par fee vasuli");
+  if(has("electricity","bijli","बिजली")&&has("disconnect","cut","kaat","डिस्कनेक्ट"))setC(35,"Bijli disconnect scam — board kabhi aise message se turant paisa nahi maangta");
   if(has("challan")&&has("pay","link","http"))setC(30,"Challan scam pattern — asli challan sirf parivahan.gov.in par bharo");
   if(has("customer care","customercare","helpline number")&&has("call","number","संपर्क"))setC(25,"Fake customer-care pattern — number hamesha official app/site se lo");
   if(has("loan")&&has("processing fee","approval fee","pay first","upfront"))setC(35,"Loan scam — asli loan pehle fee nahi maangta");
   if(has("guaranteed return","guaranteed profit","double money","paisa double","100% profit","daily profit"))setC(30,"Guaranteed/double profit — aisi guarantee sirf scam deta hai");
-  if(has("like karo","like videos","youtube video like","telegram group","telegram channel")&&has("earn","daily","₹","rs "))setC(25,"Task/job scam pattern — like karke hazaron kamai ka jhansa");
+  if(has("like karo","like videos","youtube video like","telegram group","telegram channel")&&has("earn","daily","₹","rs ","kamao","kamai"))setC(25,"Task/job scam pattern — like karke hazaron kamai ka jhansa");
   if(cluster)clusters.push([cluster,clusterName]);
   score=cluster;
   // Cross-cutting
   const cross=(c,p,r)=>{if(c){score+=p;reasons.push([p,r]);}};
   cross(/(share|batao|send|enter|daalo|type)[^.]{0,25}(otp|pin|cvv|password)/.test(t)||has("otp batao","share otp","otp share"),25,"OTP/PIN/CVV maangna — bank ya koi officer kabhi nahi maangta");
-  cross(has("install","download karo","apk")&&has("app","apk","anydesk","teamviewer","quicksupport","screen share"),20,"App/APK install ya screen-share karwana — phone ka control dena hai");
-  cross(has("tonight","today","abhi","turant","within 2 hour","within few hour","last chance","blocked today","expire ho jayega","तुरंत","आज ही"),10,"Turant/band hone ka pressure — sochne ka time na dena scam ki chaal hai");
+  cross(/(share|sharing|batao|send|daalo)[^.]{0,30}(6-digit code|verification code)/.test(t),25,"Verification code maangna — asli company apna bheja hua code kabhi share karne ko nahi kehti");
+  const apkW=/\bapk\b/.test(t); const ssTool=has("anydesk","teamviewer","quicksupport","screen share");
+  cross((has("install","download karo")||apkW)&&(has("app")||apkW||ssTool), ssTool?35:20,"App/APK install ya screen-share karwana — phone ka control dena hai");
+  cross(has("tonight","today","within 2 hour","within few hour","last chance","blocked today","expire ho jayega","तुरंत","आज ही")||/(^|[^a-zA-Z])(abhi|turant)(?![a-zA-Z])/.test(t),10,"Turant/band hone ka pressure — sochne ka time na dena scam ki chaal hai");
   cross(has("tell no one","kisi ko mat batao","secret rakho","गुप्त रखो"),10,"Chhupane ko kehna — asli authority kabhi nahi kehti");
   cross(has("lottery","won","prize","cashback milega","free gift","inaam","इनाम"),10,"Lottery/prize/cashback ka lalach");
   cross(has("electricity officer","officer ka number","call karo")&&/\d{10}/.test(t),10,"Officer ka personal mobile number — official kaam personal number se nahi hota");
@@ -119,6 +125,7 @@ export function scoreMessage(text){
 }
 export function scan(raw){
   const text=(raw||"").trim(); if(!text)return null;
+  if(/^(data|javascript|blob|file):/i.test(text)){const u=scoreURL(text,false);return{score:u.score,reasons:u.reasons,hard:u.hard,kind:"Link",official:u.official};}
   const urlMatch=text.match(/((https?:\/\/|www\.)[^\s]+|[\w\-]+(\.[\w\-]+)+\.[a-z]{2,}(:\d+)?(\/[^\s]*)?)/gi);
   const vpaMatch=text.match(/[\w.\-]{2,}@[a-zA-Z]{2,}[\w]*(?![\w]|\.[a-zA-Z])/g);
   const isSingle=text.split(/\s+/).length<=3&&!/[.!?]\s/.test(text);

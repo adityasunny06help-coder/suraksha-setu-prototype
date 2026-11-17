@@ -15,7 +15,8 @@ copy:"📋 Report Copy Karo",wa:"📲 Family ko WhatsApp Alert",call1930:"📞 1
 copied:"Report copy ho gaya",copyfail:"Copy nahi ho paya — report ko khud select karke copy karo",
 scanFirst:"Pehle Scan karo",noVoiceIn:"Is browser me voice input nahi hai",
 qrNo:"⚠️ Is browser me QR scan supported nahi hai — QR wala link/UPI type karke dalo.",qrFail:"QR code padh nahi paya — saaf photo try karo.",qrErr:"QR scan me dikkat aayi — link type karke dalo.",
-alertsH:"📰 Live Scam Alerts (sarkari/news sources se)",ageH:"🌐 Domain Age (RDAP live check)",ageReg:"Registered:",ageDays:"din purana",ageNotFound:"RDAP me is domain ka koi registration record NAHI mila — ye khud ek bada red flag hai",staleTag:"(purana cache — source abhi unreachable hai)"},
+alertsH:"📰 Live Scam Alerts (sarkari/news sources se)",ageH:"🌐 Domain Age (RDAP live check)",ageReg:"Registered:",ageDays:"din purana",ageNotFound:"RDAP me is domain ka koi registration record NAHI mila — ye khud ek bada red flag hai",staleTag:"(purana cache — source abhi unreachable hai)",
+thItem:"Cheez",thScore:"Score",offTag:" ✅ official",waMsg:"⚠️ Family Alert — ye mujhe aaya hai, paisa/OTP mat dena. Pehle check karo:"},
 hindi:{danger:"🔴 खतरा — रुक जाओ, टैप मत करो",high:"🟠 उच्च जोखिम — लगभग पक्का घोटाला है",cau:"🟡 सावधान — सत्यापित नहीं हो पाया",low:"🟢 कम जोखिम — कोई मजबूत घोटाले का संकेत नहीं मिला",
 gd:"यह घोटाला होने के पक्के संकेत मिले। पैसा/OTP बिल्कुल मत दो। 1930 पर कॉल करो या cybercrime.gov.in पर रिपोर्ट करो।",gh:"आगे मत बढ़ो। सेवा को उसके आधिकारिक ऐप से खुद खोलो।",gc:"पासवर्ड, OTP या भुगतान तब तक मत करो जब तक आधिकारिक ऐप/वेबसाइट से खुद न पहुँचो।",gl:"इसका मतलब गारंटी नहीं है। पता खुद पढ़कर ही आगे बढ़ो — OTP/PIN कभी साझा नहीं होता।",reasons:"कारण",items:"हर चीज़ का अलग स्कोर",anatomy:"डोमेन की असलियत",
 tagline:'लिंक, UPI ID, फ़ोन नंबर, संदेश या QR — <b>टैप करने से पहले</b> जाँचो। पहले आधिकारिक-डोमेन व्हाइटलिस्ट से सत्यापन होता है; पहचाना नहीं गया तो "सुरक्षित" कभी नहीं बोलता।',
@@ -30,7 +31,8 @@ copy:"📋 रिपोर्ट कॉपी करो",wa:"📲 परिव�
 copied:"रिपोर्ट कॉपी हो गया",copyfail:"कॉपी नहीं हो पाया — रिपोर्ट को खुद चुनकर कॉपी करो",
 scanFirst:"पहले स्कैन करो",noVoiceIn:"इस browser में voice input नहीं है",
 qrNo:"⚠️ इस browser में QR स्कैन समर्थित नहीं है — QR वाला लिंक/UPI टाइप करके डालो।",qrFail:"QR code पढ़ नहीं पाया — साफ़ फ़ोटो try करो।",qrErr:"QR स्कैन में दिक्कत आई — लिंक टाइप करके डालो।",
-alertsH:"📰 लाइव घोटाला अलर्ट (सरकारी/समाचार स्रोतों से)",ageH:"🌐 डोमेन आयु (RDAP लाइव जाँच)",ageReg:"पंजीकृत:",ageDays:"दिन पुराना",ageNotFound:"RDAP में इस डोमेन का कोई पंजीकरण रिकॉर्ड नहीं मिला — यह खुद एक बड़ा ख़तरे का संकेत है",staleTag:"(पुराना cache — स्रोत अभी उपलब्ध नहीं है)"}};
+alertsH:"📰 लाइव घोटाला अलर्ट (सरकारी/समाचार स्रोतों से)",ageH:"🌐 डोमेन आयु (RDAP लाइव जाँच)",ageReg:"पंजीकृत:",ageDays:"दिन पुराना",ageNotFound:"RDAP में इस डोमेन का कोई पंजीकरण रिकॉर्ड नहीं मिला — यह खुद एक बड़ा ख़तरे का संकेत है",staleTag:"(पुराना cache — स्रोत अभी उपलब्ध नहीं है)",
+thItem:"चीज़",thScore:"स्कोर",offTag:" ✅ आधिकारिक",waMsg:"⚠️ परिवार अलर्ट — यह मुझे आया है, पैसा/OTP मत देना। पहले जाँच करो:"}};
 let LANG = 'hing';
 export function getLang(){ return LANG; }
 export function getT(){ return T[LANG]; }
@@ -39,7 +41,7 @@ export function applyLang(){
   const t = T[LANG];
   const S = (id, txt)=>{ const e=document.getElementById(id); if(e) e.textContent = txt; };
   const tg = document.getElementById('tagline'); if(tg) tg.innerHTML = t.tagline;
-  const inpEl = document.getElementById('inp'); if(inpEl) inpEl.placeholder = t.ph;
+  const inpEl = document.getElementById('inp'); if(inpEl){ inpEl.placeholder = t.ph; inpEl.setAttribute('aria-label', t.ph); }
   const hn = document.getElementById('honestLine'); if(hn) hn.textContent = t.honest;
   const st = document.getElementById('statLine'); if(st) st.textContent = t.stat;
   S('scanBtn', t.scan); S('voiceBtn', t.voice); S('voiceInBtn', t.voicein); S('elderBtn', t.elder);

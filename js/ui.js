@@ -55,8 +55,8 @@ export function buildResultHTML(r, v){
     '<div class="row"><span>' + k + '</span><div class="mini"><div class="fill" style="width:' + c[k] + '%;background:' + col + ';height:100%"></div></div><b>' + c[k] + '</b></div>').join('');
   const items = analyzeAll(v);
   if(items.length > 1){
-    h += '<h3>🔎 ' + t.items + ':</h3><table><tr><th>Cheez</th><th>Score</th></tr>'
-       + items.map(i => '<tr><td>' + esc(i.label) + (i.official ? ' ✅ official' : '') + '</td><td><b>' + i.score + '/100</b></td></tr>').join('') + '</table>';
+    h += '<h3>🔎 ' + t.items + ':</h3><table><tr><th>' + t.thItem + '</th><th>' + t.thScore + '</th></tr>'
+       + items.map(i => '<tr><td>' + esc(i.label) + (i.official ? t.offTag : '') + '</td><td><b>' + i.score + '/100</b></td></tr>').join('') + '</table>';
   }
   const first = (v.match(/((https?:\/\/|www\.)[^\s]+|[\w\-]+(\.[\w\-]+)+\.[a-z]{2,}(\/[^\s]*)?)/i) || [])[0];
   if(first){
@@ -81,5 +81,5 @@ export function buildReportText(r, input){
   return '🛡️ Suraksha Setu Scan\nInput: ' + String(input).slice(0, 120)
        + '\nScore: ' + r.score + '/100 — ' + b[0]
        + '\nReasons: ' + r.reasons.slice(0, 3).map(x => nrm(x)[1]).join('; ')
-       + '\nCheck khud karo: https://adityasunny06help-coder.github.io/suraksha-setu-prototype/';
+       + '\nCheck khud karo: https://suraksha-setu-prototype.vercel.app/';
 }
