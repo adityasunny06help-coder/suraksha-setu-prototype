@@ -1,119 +1,147 @@
-# Suraksha Setu — AI Scam Shield
+# 🛡️ Suraksha Setu — AI Scam Shield (v4, Advanced Polyglot)
 
-**Tap karne se pehle check karo.** Paste a link, UPI ID, phone number or message — or scan a QR photo — and get a **0–100 risk score with plain-language reasons in Hinglish**, before you tap, pay or reply.
+**Live demo (frontend):** https://adityasunny06help-coder.github.io/suraksha-setu-prototype/
+**Repo:** https://github.com/adityasunny06help-coder/suraksha-setu-prototype
 
-🔴 **Live demo:** https://adityasunny06help-coder.github.io/suraksha-setu-prototype/
-📦 **Repository:** https://github.com/adityasunny06help-coder/suraksha-setu-prototype
+Link, UPI ID, phone number, message ya QR photo — **tap karne se pehle** scam check karo.
+Pehle official-domain whitelist se verify hota hai; jo pehchana na jaye use "safe" kabhi nahi bola jata.
 
-*PRASUNEX INNOVATHON 2026 — Team Aditya (Aditay Kumar). The engine is an on-device heuristic risk engine — no cloud AI, no data leaves the device. ("AI" is part of the registered project name; no trained ML model runs in this build.)*
+> **Sach ye hai:** ye koi cloud AI nahi hai — ye ek **on-device heuristic risk engine** hai.
+> Saari jaanch tumhare phone/browser me hi hoti hai. Agar project ka apna backend juda ho to
+> sirf domain ki umar (RDAP) jaanchne ke liye wahi domain usi backend ko bheja jata hai —
+> **tumhara paste kiya hua text kahin store NAHI hota** (backend sirf anonymous daily counters rakhta hai).
 
----
-
-## What's new in v3.1 (live demo update)
-
-- The demo page now states the honest descriptor on its own screen: on-device heuristic risk engine — no cloud AI, no data leaves the device.
-- Added one sourced context line: I4C/NCRP 2025 — 24,02,579 complaints, ₹22,495 crore reported by citizens (Source: PIB; this is the citizens' reported amount, not a bank-loss total).
-- Self-audit fixes: scan history and per-item results now render user input as inert text (stored-XSS fix); the whitelist gate now returns before any other rule, so official domains never show contradictory danger reasons; email addresses are no longer misread as UPI IDs; the Hindi toggle now switches the full static UI, not just the result panel; the copy-report button no longer claims success when the clipboard write fails.
-- All 6 built-in sample scores are unchanged (85 / 0 / 85 / 85 / 30 / 0) — regression-verified before and after the update.
-
----
-
-## Try these 5 sample inputs
-
-Copy-paste any of these into the live demo and press **Scan Karo**:
-
-```
-https://sbi-kyc-verify.top/login
-```
-→ **85 · DANGER** — "sbi" in the host, but not an official SBI domain (brand impersonation)
-
-```
-https://www.sbi.bank.in
-```
-→ **0 · LOW RISK** — official domain match (the safe control: genuine links are not falsely flagged)
-
-```
-https://meesho-offer-free.vercel.app/login
-```
-→ **85 · DANGER** — brand login page on free hosting
-
-```
-I am CBI officer. A parcel with drugs in your name is seized. You are under digital arrest. Stay on WhatsApp video call, tell no one, transfer money to RBI verification account.
-```
-→ **85 · DANGER** — Digital Arrest hard pattern (officer + video call + secrecy + transfer)
-
-```
-9876543210
-```
-→ **30 · CAUTION** — a personal mobile number; a real number is not proof of a real officer
+📊 **Kyun zaroori hai:** I4C/NCRP ke hisaab se 2025 me 24,02,579 cyber-fraud complaints aayi aur citizens ne
+₹22,495 crore ka nuksan report kiya (Source: PIB). Ye citizens dwara report kiya gaya amount hai —
+koi bank-loss ka kul aankda nahi.
 
 ---
 
-## How scoring works
+## v4 me kya badla — Advanced Polyglot Rebuild
+
+v3.1 tak Suraksha Setu ek single-file HTML app tha. **v4 me poori architecture badli hai:**
+frontend kai JS modules me, backend Python (FastAPI) me, data SQLite/SQL me,
+aur backend ke paas ek asal **LIVE signal** hai — RDAP se domain ki umar.
+Detector ke saare rules aur scores v3.1 se **bilkul barkarar** hain
+(regression gate: 6 built-in samples = 85/0/85/85/30/0, dono languages me).
+
+### Architecture
 
 ```
-Input ─► Classifier ─► Specialist scorers ─► Whitelist gate ─► 0–100 score + reasons
-         (Link / UPI /    scoreURL()           isOfficial()
-          Phone /         scoreVPA()            ├─ official → capped LOW RISK
-          Message / QR)   scoreMessage()        └─ not official → hard rules + signals
-                          scorePhone()
+            ┌────────────────────────── FRONTEND (static, koi framework nahi) ─┐
+ Browser ──▶│ index.html + style.css + js/ modules                             │
+            │  engine.js  detector (whitelist-first, brand/typosquat, patterns)│
+            │  ui.js      rendering (esc/textContent discipline)               │
+            │  i18n.js    Hindi/Hinglish — pura UI switch                      │
+            │  voice.js   Hindi voice alert + voice input                      │
+            │  qr.js      QR photo scan (BarcodeDetector)                      │
+            │  history.js localStorage scan history (XSS-safe)                 │
+            │  alerts.js  backend jod (optional, fail-silent)                  │
+            │  app.js     sab ki wiring                                        │
+            └──────────────┬───────────────────────────────────────────────────┘
+                           │  sirf tab, jab backend reachable ho:
+                           │  POST /api/check (domain-age ke liye) · GET /api/alerts
+            ┌──────────────▼────────────── BACKEND (Python + FastAPI) ─────────┐
+            │ backend/main.py    API endpoints + CORS (dev localhost)          │
+            │ backend/engine.py  detector ka Python port (parity-tested)       │
+            │ backend/rdap.py    RDAP domain-age (rdap.org + Verisign fallback)│
+            │ backend/alerts.py  live RSS headlines + SQLite cache (stale-safe)│
+            │ backend/db.py      SQLite (SS_DB_PATH, /tmp fallback, no-crash)  │
+            │ backend/schema.sql counters + caches (user text KABHI nahi)      │
+            │ api/index.py       Vercel serverless entrypoint (wahi app)       │
+            └──────────────────────────────────────────────────────────────────┘
 ```
 
-1. **Whitelist-first.** A built-in registry of ~30 official brands/services (SBI, HDFC, PNB, Paytm, IRCTC, UIDAI, …) is checked *before* any risk scoring — genuine links are never falsely flagged.
-2. **Never false-safe.** Anything unrecognised scores at least CAUTION — never "safe". Even LOW RISK is shown with a "not a guarantee" note.
-3. **Hard rules force DANGER (≥85):** brand impersonation, typosquat within Levenshtein distance 1–2 of a brand, brand page on free hosting / raw IP, punycode + sensitive page, direct APK/EXE download, Digital Arrest pattern, PIN-to-receive, fee-to-withdraw, sextortion.
-4. **Additive signals build the rest,** each with a named, user-visible reason: unrecognised domain +15, raw IP +35, URL shortener +20, free hosting +20, risky TLD +18, OTP ask +25, urgency +10, secrecy +10, and more.
-5. **Explainable output:** verdict band (DANGER ≥85 · HIGH RISK ≥55 · CAUTION ≥25 · LOW RISK <25), a reason list with point values, 4 category sub-scores (Identity · Link Structure · Message Pattern · Payment/UPI), and domain anatomy (subdomain / real domain / TLD / official status).
+### Languages — har ek ka asli kaam
 
-## Privacy — and how to verify it yourself
+| Language | Kahan | Kya kaam |
+|---|---|---|
+| HTML | `index.html` | Page structure (sirf structure + links) |
+| CSS | `style.css` | Poori styling, Elder Mode bade akshar |
+| JavaScript | `js/*.js` (8 modules) | On-device detector, UI, voice, QR, history, backend jod |
+| Python | `backend/*.py` | FastAPI service, detector port, RDAP + RSS live data |
+| SQL | `backend/schema.sql` | Counters, alerts cache, RDAP cache, feed status |
+| Bash | `run.sh`, `test.sh` | Dev server jodi + poora test suite ek command me |
+| JSON | `vercel.json` | Vercel routing (`/api/*` → serverless function) |
 
-- **100% on-device.** One HTML file, zero dependencies, no backend, no accounts, no analytics, no network calls. The message being checked never leaves the device; the only stored data is the last-5 scan history in your own browser (`localStorage`).
-- **Verify:** turn on **airplane mode** and open the live demo (or the downloaded `index.html`) — every check still works offline.
+---
 
-## Implemented (live today, v3.1)
+## Features
 
-- One input for 5 input types: **link · UPI ID · phone number · full message · QR photo** (BarcodeDetector)
-- Link engine: impersonation, typosquat, punycode/homograph, free-hosting & tunnel domains, shorteners, risky TLDs, raw-IP hosts, `@`-trick URLs, dangerous schemes, APK/EXE downloads
-- UPI checker: lookalike handles, brand/lure names, unknown handle = "payee not verified", PIN-to-receive myth-bust
-- Message engine: Digital Arrest, KYC-expiry, courier/customs, bijli-disconnect, challan, loan-fee, task/job, sextortion + OTP/urgency/secrecy signals
-- Phone checker: personal mobile vs 140 / 160 / 1800 series, with honest per-category guidance
-- Hinglish UI + full **Hindi UI** toggle · **Elder Mode** (125% text, larger buttons)
-- **Hindi voice alert** (SpeechSynthesis) + **voice input** (SpeechRecognition)
-- **WhatsApp family alert** (wa.me) with the full report · copyable report · scan history (last 5, on-device)
-- **1930 helpline button** on high-risk results + cybercrime.gov.in direction
-- 6 built-in demo samples
+- **Ek input, sab check:** Link / UPI ID / Phone number / Message / QR photo
+- **Whitelist-first engine:** official domain sabse pehle match — pehchana nahi gaya to "safe" nahi bolta
+- **0–100 risk score** + 4 category sub-scores (Pehchan, Link Banawat, Message Pattern, Payment/UPI)
+- **Domain ki asaliyat:** subdomain / asli domain / TLD / official hai ya nahi
+- **Brand impersonation + typosquat** jaanch (Levenshtein), punycode/homograph, free-hosting, IP-host — hard rules
+- **Message patterns:** Digital Arrest, KYC, courier/customs, bijli-disconnect, challan, task/job, loan-fee, sextortion
+- **Phone checker:** 140 = telemarketing, 160 = service series, personal number = pehchan ka proof nahi
+- **RDAP domain-age (backend, LIVE):** domain kab register hua — naya domain = extra risk signal; record hi na mile to woh bhi red flag
+- **Live scam alerts (backend):** PIB + Google News RSS se headlines, source + fetched-at ke saath, purana cache `stale` label ke saath
+- **Hinglish + Hindi UI** (pura UI switch hota hai), **Elder Mode**, **Hindi voice alert + voice input**
+- **Family WhatsApp alert** + Danger par **1930 call** button, scan history
 
-## Planned (roadmap — NOT built yet)
+## Backend API
 
-- On-device ML classifier layered over the rule engine (still fully offline)
-- Android app + WhatsApp share-intent
-- More Indian languages; larger official-domain / UPI-handle registries
-- Opt-in, anonymised community reporting feed (the only planned server component)
-- Deeper 1930 / cybercrime.gov.in reporting hand-off
+| Endpoint | Kaam |
+|---|---|
+| `GET /api/health` | Liveness — `{status:"ok", version:"4.0"}` |
+| `POST /api/check` `{input}` | Python engine ka score/band/reasons + domain + **RDAP domain-age** (found/registered_on/age_days/risk_points). Input 1–4000 chars validate hota hai. User ka URL server se **kabhi fetch nahi** hota (SSRF discipline) — sirf domain ka RDAP record dekha jata hai |
+| `GET /api/alerts` | Live headlines `{items, fetched_at, stale}` — 30 min cache, feed fail ho to purana cache stale label ke saath |
 
-## Limitations
+**Privacy:** scan ka text database me kabhi store nahi hota. DB me sirf hai:
+anonymous daily counters (date, total_scans, danger_count), public RSS headlines ka cache,
+aur public domains ke RDAP results ka cache. (Test se proven: unique marker text DB file me nahi milta.)
 
-- **Heuristic engine, not a guarantee** — the app says so on its own screen. LOW RISK means no strong scam signal was found; never share OTP/PIN regardless of any score.
-- **Finite whitelist (~30 brands):** a genuine smaller bank/company not yet listed scores CAUTION by design, not LOW RISK.
-- **New scam phrasing can evade message patterns** — the planned ML layer targets this.
-- **QR scan needs `BarcodeDetector`** (Chrome/Android); **voice input needs `SpeechRecognition`** (Chrome-family). Both degrade gracefully with a clear fallback message.
-- **Web MVP, not a native app** — no Android app, backend or ML model exists in the current build.
+## Local me chalana
 
-## Run it locally
+```bash
+./run.sh        # backend :8000 + frontend :8080 ek saath (pehli baar venv + deps automatic)
+# ya alag-alag:
+cd backend && python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && .venv/bin/uvicorn main:app --port 8000
+python3 -m http.server 8080                               # repo root se (dusre terminal me)
+```
 
-No build, no install:
+Frontend **bina backend ke bhi 100% chalta hai** — backend mile to domain-age line aur
+alerts strip apne aap jud jati hai, na mile to chup-chaap standalone.
+API base ka order: `window.SS_API_BASE` → `?api=` URL param → same-origin `/api` → `http://localhost:8000`.
 
-1. Open `index.html` in any browser, **or**
-2. `python3 -m http.server 8000` in this folder → http://localhost:8000
+## Tests
 
-## Testing
+```bash
+./test.sh
+```
 
-- v2 engine: 32 curated cases, **32/32 PASS** (project build log, 13 Nov 2026)
-- v3 engine: **41/41 local PASS**, **3/3 live PASS** on the deployed build (CodeQuest Final Build documentation, §7)
-- The 6 built-in samples above are reproducible on the live demo — no accuracy % is claimed; these are curated functional tests, not a field evaluation.
+- **Backend (pytest, 24 tests):** cross-language parity (Python me bhi 6/6 scores),
+  RDAP parse/fallback/404, RSS parse + per-feed isolation, API validation,
+  privacy (user text DB me nahi), Vercel entrypoint import smoke
+- **Frontend (node --test, 10 tests):** regression gate 6/6, i18n key parity,
+  esc/XSS discipline, jsdom DOM tests (history stored-XSS fix, pura language switch)
 
-## Team
+## Deploy
 
-**Team Aditya — Aditay Kumar** (solo team). Built for PRASUNEX INNOVATHON 2026 with AI-assisted development, disclosed per the event rules. No third-party code libraries or external APIs are used.
+- **GitHub Pages:** repo root ka static frontend serve hota hai — backend wala hissa
+  Pages par nahi chalta (wahan demo hamesha standalone mode me rehta hai).
+- **Vercel (poora app, frontend + backend ek domain par):**
+  1. GitHub par ye repo push karo
+  2. Vercel me repo **Import** karo (koi framework preset nahi — "Other")
+  3. Deploy — `api/index.py` serverless function ban jayega, root `requirements.txt`
+     (fastapi + httpx) install hoga, `vercel.json` `/api/*` ko function par bhejega
+  4. Env vars: **koi secret nahi chahiye.** Optional: `SS_DB_PATH=/tmp/suraksha-setu.db`
+     (default bhi /tmp fallback khud kar leta hai)
+  - ⚠️ Serverless par SQLite **ephemeral** hai — counters/cache garam instance tak
+    rehte hain, cold start par reset ho sakte hain. Kal ko asal persistence chahiye
+    to external DB lagega; abhi ke liye ye seema jaan-boojh kar sweekar ki gayi hai.
 
-*Scam lage to 1930 par call karo ya cybercrime.gov.in par report karo.*
+## Seemayein (imaandari se)
+
+- Heuristic engine hai — guarantee nahi deta. OTP/PIN kabhi share mat karo; scam lage to **1930** par call karo ya cybercrime.gov.in par report karo.
+- RDAP sab TLDs par ek jaisa nahi milta; lookup fail ho to domain-age signal bas gayab rehta hai, galat data nahi banta.
+- CERT-In aur RBI ke public RSS endpoints is samay asal RSS nahi dete (verify kiya gaya) — isliye alerts PIB + Google News se aate hain, har item par source likha hota hai.
+- QR scan Chrome/Android (BarcodeDetector) par chalta hai.
+
+## Version itihaas
+
+- **v2** — whitelist-first engine · **v3** — QR, phone checker, Hindi/Elder mode, WhatsApp alert
+- **v3.1** — honest descriptor, sourced stat, 7 audit fixes (incl. stored-XSS)
+- **v4** — advanced polyglot rebuild: modular JS frontend + Python FastAPI backend + SQLite + live RDAP/RSS (ye version)
+- Aage ka roadmap (Flutter/FastAPI/TFLite wala purana plan) **future plan hai, bana hua nahi** — jab banega tabhi yahan likhega.

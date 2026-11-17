@@ -1,0 +1,4 @@
+# Vercel Python runtime ke liye (root) — minimal rakha hai.
+# Local dev ke liye backend/requirements.txt dekho (uvicorn/pytest wahan hain).
+fastapi==0.163.2
+httpx==0.28.1
